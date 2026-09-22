@@ -5,6 +5,7 @@ import com.nak.demo.entity.RefreshToken;
 import com.nak.demo.entity.User;
 import com.nak.demo.exception.model.ResourceNotFoundException;
 import com.nak.demo.repository.RefreshTokenRepository;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import javax.naming.AuthenticationException;
@@ -19,11 +20,17 @@ public class RefreshTokenService {
 
    @Autowired
    private ApplicationConfiguration appConfig;
+
+   private long expiration;
+
+   @PostConstruct
+   private void init(){
+       this.expiration = appConfig.getSecurity().getRefreshTokenExpiration();
+   }
     public RefreshToken createRefreshToken(User user) {
 
         String refreshToken = generateSecureRefreshToken();
 
-        long expiration = appConfig.getSecurity().getRefreshTokenExpiration();
 
         RefreshToken entity = new RefreshToken();
 

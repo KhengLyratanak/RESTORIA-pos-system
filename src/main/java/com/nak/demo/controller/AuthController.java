@@ -30,7 +30,7 @@ public class AuthController {
                 .body(Response.success("201","success","successfully registed user",dto));
     }
     @PostMapping("/login")
-    public ResponseEntity<Response> login(@RequestBody AuthDto payload){
+    public ResponseEntity<Response> login(@Valid @RequestBody AuthDto payload){
         AuthResponseDto dto = authService.login(payload);
 
         return ResponseEntity.status(HttpStatus.OK)
