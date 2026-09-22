@@ -1,9 +1,12 @@
 package com.nak.demo.service.security;
 
+import com.nak.demo.common.config.ApplicationConfiguration;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
@@ -17,11 +20,18 @@ import java.util.function.Function;
 
 @Component
 public class JwtUtil {
-    @Value("${config.security.secret}")
-    private String secret; // ThisIsMySecret
 
-    @Value("${config.security.expiration}")
-    private long expiration; // 3600000ms
+    @Autowired
+    private ApplicationConfiguration appConfig;
+
+    private long expiration;
+    private String secret;
+    @PostConstruct
+    private void init(){
+        this.secret = appConfig.getSecurity().getSecret();
+        this.expiration = appConfig.getSecurity().getExpiration();
+    }
+
 
     private Key getSigningKey() {
         return Keys.hmacShaKeyFor(this.secret.getBytes());
