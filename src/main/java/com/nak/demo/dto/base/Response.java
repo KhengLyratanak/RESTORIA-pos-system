@@ -42,6 +42,10 @@ public class Response {
     public static Response badRequest(String message,String description){
         return  new Response("400",message,description);
     }
+
+    public static Response badRequest(String message,String description,Object data) {
+        return new Response("400", message, description,data);
+    }
     public static Response error(String code,String message,String description){
         return new Response(code,message,description);
     }

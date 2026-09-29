@@ -2,6 +2,8 @@ package com.nak.demo.exception;
 
 import com.nak.demo.Model.BaseResponseModel;
 import com.nak.demo.Model.BaseResponseModelWithData;
+import com.nak.demo.dto.base.Response;
+import com.nak.demo.exception.model.CustomAuthenticationException;
 import com.nak.demo.exception.model.DuplicateException;
 import com.nak.demo.exception.model.ResourceNotFoundException;
 import com.nak.demo.exception.model.UnprocessableEntityException;
@@ -18,22 +20,22 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<BaseResponseModel> handleResourceNotFoundException(ResourceNotFoundException ex){
+    public ResponseEntity<Response> handleResourceNotFoundException(ResourceNotFoundException ex){
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(new BaseResponseModel("fail",ex.getMessage()));
+                .body(Response.badRequest("fail",ex.getMessage()));
     }
     @ExceptionHandler(DuplicateException.class)
-    public ResponseEntity<BaseResponseModel> handleDuplicateResourceException(DuplicateException ex){
+    public ResponseEntity<Response> handleDuplicateResourceException(DuplicateException ex){
         return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(new BaseResponseModel("fail",ex.getMessage()));
+                .body(Response.badRequest("fail",ex.getMessage()));
     }
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<BaseResponseModel> handleGenericException(Exception ex){
+    public ResponseEntity<Response> handleGenericException(Exception ex){
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new BaseResponseModel("fail","unexpected error occured:" +ex.getMessage()));
+                .body(Response.badRequest("fail","unexpected error occured:" +ex.getMessage()));
     }
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<BaseResponseModelWithData> handleValidationException(MethodArgumentNotValidException ex){
+    public ResponseEntity<Response> handleValidationException(MethodArgumentNotValidException ex){
         Map<String,String> errors = new HashMap();
         ex.getBindingResult().getAllErrors()
                 .forEach((error) ->{
@@ -45,12 +47,17 @@ public class GlobalExceptionHandler {
         });
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new BaseResponseModelWithData("fail","validation failed",errors));
+                .body(Response.badRequest("fail","validation failed",errors));
     }
     @ExceptionHandler(UnprocessableEntityException.class)
-    public ResponseEntity<BaseResponseModel> handleUnprocessableEntity(UnprocessableEntityException ex){
+    public ResponseEntity<Response> handleUnprocessableEntity(UnprocessableEntityException ex){
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
-                .body(new BaseResponseModel("fail",ex.getMessage()));
+                .body(Response.badRequest("fail",ex.getMessage()));
+    }
+    @ExceptionHandler(CustomAuthenticationException.class)
+    public ResponseEntity<Response> handleAuthenticationException(CustomAuthenticationException ex){
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(Response.badRequest("fail",ex.getMessage()));
     }
 }
 
