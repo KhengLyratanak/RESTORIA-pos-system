@@ -1,10 +1,8 @@
 package com.nak.demo.dto.base;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Data;
-import lombok.Getter;
 @JsonPropertyOrder(value = {"code","message","description","data","timestamp"})
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Data
@@ -43,5 +41,8 @@ public class Response {
     }
     public static Response badRequest(String message,String description){
         return  new Response("400",message,description);
+    }
+    public static Response error(String code,String message,String description){
+        return new Response(code,message,description);
     }
 }
