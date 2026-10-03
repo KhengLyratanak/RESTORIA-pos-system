@@ -1,10 +1,10 @@
 package com.nak.demo.mapper;
 
+import com.nak.demo.dto.order.OrderItemDto;
+import com.nak.demo.dto.order.OrderItemResponseDto;
 import com.nak.demo.entity.OrderItem;
 import com.nak.demo.entity.Product;
 import com.nak.demo.repository.ProductRepository;
-import com.nak.demo.dto.order.OrderItemDto;
-import com.nak.demo.dto.order.OrderItemResponseDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -12,9 +12,12 @@ import java.util.List;
 
 @Component
 public class OrderItemMapper {
+
     @Autowired
     private ProductRepository productRepository;
-    public OrderItem toEntity (OrderItemDto dto){
+
+    public OrderItem toEntity(OrderItemDto dto) {
+
         OrderItem entity = new OrderItem();
 
         entity.setProductId(dto.getProductId());
@@ -22,17 +25,27 @@ public class OrderItemMapper {
 
         return entity;
     }
-    public OrderItemResponseDto toResponseDto (OrderItem entity){
-        if (entity == null){
+
+    public OrderItemResponseDto toResponseDto(OrderItem entity) {
+
+        if (entity == null) {
             return null;
         }
+
         OrderItemResponseDto dto = new OrderItemResponseDto();
+
         dto.setProductId(entity.getProductId());
         dto.setPurchaseAmount(entity.getQuantity());
 
-        //query get product
         Product product = productRepository.findById(entity.getProductId())
-                .orElseThrow(() -> new RuntimeException("product not found with id : " + entity.getProductId()));
+                .orElse(null);
+
+        // Product was deleted, but keep the order
+        if (product == null) {
+            dto.setProductName("Product not found");
+            dto.setUnitPrice(0.0);
+            return dto;
+        }
 
         dto.setProductName(product.getProductName());
         dto.setUnitPrice(product.getPrice());
@@ -40,10 +53,11 @@ public class OrderItemMapper {
         return dto;
     }
 
-    public List<OrderItemResponseDto> toResponseDtoList(List<OrderItem> entities){
-        return entities
-                .stream()
-                .map(orderItem -> this.toResponseDto(orderItem))
+    public List<OrderItemResponseDto> toResponseDtoList(
+            List<OrderItem> entities) {
+
+        return entities.stream()
+                .map(this::toResponseDto)
                 .toList();
     }
 }
