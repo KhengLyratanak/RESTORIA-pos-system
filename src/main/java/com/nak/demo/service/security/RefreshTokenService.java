@@ -62,6 +62,12 @@ public class RefreshTokenService {
         //generate new rf token
         return this.createRefreshToken(oldToken.getUser());
     }
+
+    public void deleteExpiredAndRevokedToken(){
+        refreshTokenRepository.deleteExpiredAndRevokedTokens(LocalDateTime.now());
+    }
+
+
     public String generateSecureRefreshToken(){
         SecureRandom random = new SecureRandom();
 
@@ -71,4 +77,6 @@ public class RefreshTokenService {
 
         return Base64.getUrlEncoder().withoutPadding().encodeToString(tokenBytes);
     }
+
+
 }

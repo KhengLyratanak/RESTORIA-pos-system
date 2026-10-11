@@ -2,16 +2,16 @@ package com.nak.demo;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
-@RestController
+
 @SpringBootApplication
+@EnableScheduling
 public class RetestApplication {
 
-	public static void main(String[] args)
+    public static void main(String[] args)
     {
-		SpringApplication.run(RetestApplication.class, args);
-	}
-
+        SpringApplication.run(RetestApplication.class, args);
     }
 
+}
