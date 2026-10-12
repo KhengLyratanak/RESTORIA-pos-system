@@ -8,6 +8,8 @@ import com.nak.demo.repository.ProductRepository;
 import com.nak.demo.dto.product.ProductResponseDto;
 import com.nak.demo.mapper.ProductMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,6 +20,13 @@ public class ProductService {
     private ProductRepository productRepository;
     @Autowired
     private ProductMapper mapper;
+
+    public Page<ProductResponseDto> listProductWithPagination(Pageable pageable) {
+        Page<Product> productPages = productRepository.findAll(pageable);
+        Page<ProductResponseDto> productPagesDto = productPages.map(product -> mapper.toDto(product));
+        return productPages.map(product -> mapper.toDto(product));
+
+    }
 
     public List<ProductResponseDto> listProduct() {
         List<Product> products = productRepository.findAll();
