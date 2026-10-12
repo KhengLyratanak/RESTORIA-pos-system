@@ -1,0 +1,18 @@
+spring:
+  application:
+    name: New Demo
+  datasource:
+    url: jdbc:postgresql://localhost:5432/mydb_staging
+    username: admin
+    password: admin
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+config:
+  security:
+    secret: 388c81c79cada4abd82f6cd6a1b76de8eb0c156009f98137e4c41064430eabdd
+    expiration: 100000 # ms
+    refresh-token-expiration: 3 # hr

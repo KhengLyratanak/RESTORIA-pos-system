@@ -1,18 +1,27 @@
+
 spring:
   application:
     name: New Demo
+
   datasource:
-    url: jdbc:postgresql://localhost:5432/project
-    username: admin
-    password: admin
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/project}
+    username: ${DB_USERNAME:admin}
+    password: ${DB_PASSWORD:admin}
     driver-class-name: org.postgresql.Driver
+
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+server:
+  port: ${PORT:8080}
 
 config:
   security:
-    secret: 388c81c79cada4abd82f6cd6a1b76de8eb0c156009f98137e4c41064430eabdd
-    expiration: 3600000 # ms
-    refresh-token-expiration: 3 # hr
+    secret: ${JWT_SECRET}
+    expiration: 3600000
+    refresh-token-expiration: 3
