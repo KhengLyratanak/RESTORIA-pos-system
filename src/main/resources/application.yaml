@@ -1,27 +1,27 @@
-
 spring:
   application:
-    name: New Demo
-
+    name: ecommerce project
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/project}
-    username: ${DB_USERNAME:admin}
-    password: ${DB_PASSWORD:admin}
+    url: jdbc:postgresql://localhost:5432/project
+    username: admin
+    password: admin
     driver-class-name: org.postgresql.Driver
-
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
-
-server:
-  port: ${PORT:8080}
 
 config:
   security:
-    secret: ${JWT_SECRET}
-    expiration: 3600000
-    refresh-token-expiration: 3
+    secret: f486eb1747aad3ee8570034d618de57b994830b303848ae189223b115f31726d
+    expiration: 3600000 #ms
+    refresh-token-expiration: 3 #hr
+
+  pagination:
+    base-url: http://localhost:8080/api/v1
+    uri:
+      product: /products/paginated
+      stock: /stocks/paginated
+      supplier: /suppliers/paginated
+      user: /users/paginated
+      order: /orders/paginated

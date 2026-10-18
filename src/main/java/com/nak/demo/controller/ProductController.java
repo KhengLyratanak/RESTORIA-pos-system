@@ -1,5 +1,6 @@
 package com.nak.demo.controller;
 
+import com.nak.demo.dto.base.PagenatedResponse;
 import com.nak.demo.dto.base.Response;
 import com.nak.demo.dto.product.ProductResponseDto;
 import com.nak.demo.dto.product.ProductDto;
@@ -8,6 +9,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,8 +25,8 @@ public class ProductController {
 
     @GetMapping("/paginated")
     public ResponseEntity<Response> listProductWithPagination(
-            @PageableDefault(size = 10, page = 0) Pageable pageable) {
-        Page<ProductResponseDto> products = productService.listProductWithPagination(pageable);
+            @PageableDefault(size = 10, page = 0,sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+      PagenatedResponse<ProductResponseDto> products = productService.listProductWithPagination(pageable);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(Response.success("200","success","successfully retrieved product with pagination",products ));
     }

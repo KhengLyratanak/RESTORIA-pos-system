@@ -1,5 +1,7 @@
 package com.nak.demo.service;
 
+import com.nak.demo.common.config.ApplicationConfiguration;
+import com.nak.demo.dto.base.PagenatedResponse;
 import com.nak.demo.entity.Product;
 import com.nak.demo.exception.model.DuplicateException;
 import com.nak.demo.exception.model.ResourceNotFoundException;
@@ -21,10 +23,13 @@ public class ProductService {
     @Autowired
     private ProductMapper mapper;
 
-    public Page<ProductResponseDto> listProductWithPagination(Pageable pageable) {
+    @Autowired
+    private ApplicationConfiguration appConfig;
+
+    public PagenatedResponse listProductWithPagination(Pageable pageable) {
         Page<Product> productPages = productRepository.findAll(pageable);
         Page<ProductResponseDto> productPagesDto = productPages.map(product -> mapper.toDto(product));
-        return productPages.map(product -> mapper.toDto(product));
+        return PagenatedResponse.from(productPagesDto, appConfig.getPagination().getUrlByResource("stock"));
 
     }
 

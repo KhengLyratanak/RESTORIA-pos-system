@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Service;
 
 import java.security.Security;
+import java.util.HashMap;
 
 @Configuration
 @ConfigurationProperties(prefix = "config")
@@ -15,6 +16,7 @@ import java.security.Security;
 @Setter
 public class ApplicationConfiguration {
     private Security security;
+    private Pagination pagination;
 
     @Getter
     @Setter
@@ -22,5 +24,17 @@ public class ApplicationConfiguration {
         private String secret;
         private long expiration;
         private long refreshTokenExpiration; // refresh-token-expiration
+    }
+
+    @Getter
+    @Setter
+    public static class Pagination{
+        private String baseUrl;
+        private HashMap<String,String> uri;
+
+        public String getUrlByResource(String resource){
+            return baseUrl.concat(uri.getOrDefault(resource,""));
+        }
+
     }
 }
