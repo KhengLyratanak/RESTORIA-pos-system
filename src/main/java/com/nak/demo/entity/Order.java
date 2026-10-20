@@ -4,6 +4,7 @@ import com.nak.demo.common.enums.OrderStatus;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -19,6 +20,10 @@ public class Order {
 
     private String status = OrderStatus.PENDING.name();
 
+    private BigDecimal totalAmount;     // → getTotalAmount()
+    private BigDecimal totalPrice;      // → getTotalPrice()
+    private BigDecimal grandTotal;      // → getGrandTotal()
+    private Double total;               // → getTotal() (needs a getter)
     @OneToMany(mappedBy = "order",cascade = CascadeType.ALL)
     private List<OrderItem> items;
     @Column(name = "created_at")
