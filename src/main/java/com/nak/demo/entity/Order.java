@@ -20,10 +20,10 @@ public class Order {
 
     private String status = OrderStatus.PENDING.name();
 
-    private BigDecimal totalAmount;     // → getTotalAmount()
-    private BigDecimal totalPrice;      // → getTotalPrice()
-    private BigDecimal grandTotal;      // → getGrandTotal()
-    private Double total;               // → getTotal() (needs a getter)
+    private BigDecimal totalAmount = BigDecimal.ZERO;
+    private BigDecimal totalPrice = BigDecimal.ZERO;
+    private BigDecimal grandTotal = BigDecimal.ZERO;
+    private Double total = 0.0;             // → getTotal() (needs a getter)
     @OneToMany(mappedBy = "order",cascade = CascadeType.ALL)
     private List<OrderItem> items;
     @Column(name = "created_at")

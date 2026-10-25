@@ -5,16 +5,16 @@ spring:
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/project}
     username: ${DB_USERNAME:admin}
-    password: ${DB_PASSWORD:admin}
+    password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
-        format_sql: true
+        format_sql: false
 
 server:
   port: ${PORT:8080}
@@ -23,13 +23,26 @@ config:
   security:
     secret: ${JWT_SECRET}
     expiration: 3600000
-    refresh-token-expiration: 3
+    refresh-token-expiration: 10800000
 
-  pagination:
-    base-url: http://localhost:8080/api/v1
-    uri:
-      product: /products/paginated
-      stock: /stocks/paginated
-      supplier: /suppliers/paginated
-      user: /users/paginated
-      order: /orders/paginated
+pagination:
+  base-url: ${PUBLIC_API_URL:http://localhost:8080/api/v1}
+  uri:
+    product: /products/paginated
+    stock: /stocks/paginated
+    supplier: /suppliers/paginated
+    user: /users/paginated
+    order: /orders/paginated
+
+bakong:
+  base-url: ${BAKONG_BASE_URL:https://sit-api-bakong.nbc.gov.kh}
+  token: ${BAKONG_TOKEN:}
+  account-id: abaakhppxxx@abaa
+  account-information: "007902781"
+  merchant-account: false
+  merchant-id: ""
+  acquiring-bank: "ABA Bank"
+  merchant-name: LYRATANAK KHENG
+  merchant-city: Phnom Penh
+  terminal-label: POS-1
+  qr-ttl-seconds: 180

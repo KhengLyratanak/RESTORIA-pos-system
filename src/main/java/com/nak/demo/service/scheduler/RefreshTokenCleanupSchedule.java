@@ -1,4 +1,4 @@
-package com.nak.demo.service.schedule;
+package com.nak.demo.service.scheduler;
 
 
 import com.nak.demo.service.security.RefreshTokenService;

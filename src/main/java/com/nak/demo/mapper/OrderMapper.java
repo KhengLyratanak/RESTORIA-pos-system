@@ -17,6 +17,7 @@ public class OrderMapper {
     public Order toEntity(OrderCreateDto dto) {
 
         Order entity = new Order();
+        entity.setTotal(0.0);
 
         List<OrderItem> orderItemEntities = dto.getOrderItems()
                 .stream()
@@ -46,17 +47,17 @@ public class OrderMapper {
         dto.setStatus(entity.getStatus());
 
         if (entity.getItems() != null && !entity.getItems().isEmpty()) {
-
             List<OrderItemResponseDto> orderItemDtos =
                     orderItemMapper.toResponseDtoList(entity.getItems());
 
             dto.setItems(orderItemDtos);
 
             Double total = calculateTotalPrice(orderItemDtos);
-
+            entity.setTotal(total);
             dto.setTotal(total);
         } else {
             dto.setItems(List.of());
+            entity.setTotal(0.0);
             dto.setTotal(0.0);
         }
 
