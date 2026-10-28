@@ -5,6 +5,7 @@ import com.nak.demo.repository.PaymentRepository;
 import com.nak.demo.service.PaymentService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -15,17 +16,13 @@ import java.util.UUID;
 public class PaymentSweeper {
 
     private static final Logger log = LoggerFactory.getLogger(PaymentSweeper.class);
-    private final PaymentRepository repo;
-    private final PaymentService service;
 
-    public PaymentSweeper(PaymentRepository repo, PaymentService service) {
-        this.repo = repo;
-        this.service = service;
-    }
+    @Autowired
+    private PaymentService service;
 
-    @Scheduled(fixedDelay = 15_000)
+    @Scheduled(fixedDelay = 60000)
     public void sweep() {
-        for (UUID id : repo.findIdsByStatus(PaymentStatus.PENDING)) {
+        for (UUID id : service.findPendingIds()) {
             try {
                 service.refresh(id);
             } catch (Exception e) {

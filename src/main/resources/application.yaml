@@ -3,15 +3,15 @@ spring:
     name: New Demo
 
   datasource:
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    url: jdbc:postgresql://localhost:5432/project
+    username: admin
+    password: admin
     driver-class-name: org.postgresql.Driver
 
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: false
+    show-sql: true
     properties:
       hibernate:
         format_sql: false
@@ -21,7 +21,7 @@ server:
 
 config:
   security:
-    secret: ${JWT_SECRET}
+    secret: f486eb1747aad3ee8570034d618de57b994830b303848ae189223b115f31726d
     expiration: 3600000
     refresh-token-expiration: 10800000
 
@@ -35,8 +35,8 @@ pagination:
     order: /orders/paginated
 
 bakong:
-  base-url: ${BAKONG_BASE_URL:https://sit-api-bakong.nbc.gov.kh}
-  token: ${BAKONG_TOKEN:}
+  base-url: https://api-bakong.nbc.gov.kh
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7ImlkIjoiOGEyNzk4NTkyNjI4NGNlMSJ9LCJpYXQiOjE3OTMxODcwMjEsImV4cCI6MTgwMDk2MzAyMX0.uNCJxIIMEXiy_CZsEKDMaJFTQAEnDFY1-YeU0JPeTJw
   account-id: abaakhppxxx@abaa
   account-information: "007902781"
   merchant-account: false
@@ -45,4 +45,4 @@ bakong:
   merchant-name: LYRATANAK KHENG
   merchant-city: Phnom Penh
   terminal-label: POS-1
-  qr-ttl-seconds: 180
+  qr-ttl-seconds: 600

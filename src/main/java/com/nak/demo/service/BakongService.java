@@ -7,6 +7,8 @@ import com.nak.demo.dto.response.BakongTransactionResponse;
 import com.nak.demo.exception.model.BakongException;
 import com.nak.demo.mapper.BakongMapper;
 import com.nak.demo.repository.BakongTransactionLogRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +19,7 @@ import java.util.UUID;
 @Service
 public class BakongService {
 
+    private static final Logger log = LoggerFactory.getLogger(BakongService.class);
     private static final String HEALTH_MD5 = "00000000000000000000000000000000";
 
     private final BakongClient client;
@@ -34,13 +37,32 @@ public class BakongService {
 
     public Optional<BakongTransactionResponse> findTransaction(String md5) {
         JsonNode body = client.checkTransactionByMd5(md5);
+
         int code = body.path("responseCode").asInt(-1);
+        int errorCode = body.path("errorCode").asInt(-1);
+        String message = body.path("responseMessage").asText("?");
+
+        // Log Bakong's real answer so it is visible in the console.
+        log.info("Bakong reply for md5 {}: responseCode={}, errorCode={}, message={}",
+                md5, code, errorCode, message);
 
         if (code == 0 && body.hasNonNull("data")) {
             return Optional.of(mapper.toTransaction(body.get("data")));
         }
-        if (code == 1) return Optional.empty();   // not found = not paid yet
-        throw new BakongException("Unexpected Bakong response: " + body.path("responseMessage").asText("?"));
+
+        // responseCode 1 is used for ALL failures, so only a real "not found" means "not paid yet".
+        if (code == 1 && isNotFound(errorCode, message)) {
+            return Optional.empty();
+        }
+
+        // Anything else (Unauthorized, bad request, ...) is an error, not "unpaid".
+        throw new BakongException("Bakong rejected the request: errorCode=" + errorCode
+                + ", message=" + message);
+    }
+
+    private boolean isNotFound(int errorCode, String message) {
+        String m = message == null ? "" : message.toLowerCase();
+        return errorCode == 3 || m.contains("not found") || m.contains("could not be found");
     }
 
     @Transactional   // joins the payment's transaction, so recording and settling succeed or fail together

@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 public class RefreshTokenCleanupSchedule {
 @Autowired
     private RefreshTokenService refreshTokenService;
-    @Scheduled(cron="0 0 0/3 * * ? ")
+    @Scheduled(cron="0 0 */3 * * * ")
     public void cleanupExpiredAndRevokedToken(){
         //execute to clean up tokens
         refreshTokenService.deleteExpiredAndRevokedToken();

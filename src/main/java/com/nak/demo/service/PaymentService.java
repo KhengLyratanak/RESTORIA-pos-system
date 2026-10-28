@@ -1,4 +1,5 @@
 package com.nak.demo.service;
+
 import com.nak.demo.common.config.BakongProperties;
 import com.nak.demo.common.enums.PaymentStatus;
 import com.nak.demo.dto.response.BakongTransactionResponse;
@@ -12,6 +13,7 @@ import com.nak.demo.repository.PaymentRepository;
 import com.nak.demo.util.KhqrBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,23 +31,23 @@ public class PaymentService {
     private static final Duration MIN_RECHECK = Duration.ofSeconds(2);          // do not hammer Bakong
     private static final Duration GIVE_UP_AFTER_EXPIRY = Duration.ofMinutes(5);
 
-    // Dependency injection: everything arrives through the constructor.
-    private final PaymentRepository repository;
-    private final BakongService bakong;
-    private final BakongProperties props;
-    private final OrderGatewayService orders;
-    private final PaymentMapper mapper;
-    private final Clock clock;
+    @Autowired
+    private PaymentRepository repository;
 
-    public PaymentService(PaymentRepository repository, BakongService bakong, BakongProperties props,
-                          OrderGatewayService orders, PaymentMapper mapper, Clock clock) {
-        this.repository = repository;
-        this.bakong = bakong;
-        this.props = props;
-        this.orders = orders;
-        this.mapper = mapper;
-        this.clock = clock;
-    }
+    @Autowired
+    private BakongService bakong;
+
+    @Autowired
+    private BakongProperties props;
+
+    @Autowired
+    private OrderGatewayService orders;
+
+    @Autowired
+    private PaymentMapper mapper;
+
+    @Autowired
+    private Clock clock;
 
     @Transactional
     public PaymentResponse createKhqr(Long orderId) {
@@ -65,7 +67,7 @@ public class PaymentService {
 
         Instant expires = now.plusSeconds(props.qrTtlSeconds());
         var built = KhqrBuilder.build(new KhqrBuilder.Params(
-                props.accountId(), props.accountInformation(),          // NEW second argument
+                props.accountId(), props.accountInformation(),
                 props.merchantName(), props.merchantCity(),
                 props.merchantAccount(), props.merchantId(), props.acquiringBank(),
                 order.currency(), order.amount(), order.number(), props.terminalLabel(),
@@ -112,11 +114,17 @@ public class PaymentService {
                 settle(p, tx.get(), now);
                 return p;
             }
-            if (expired) p.setStatus(PaymentStatus.EXPIRED);   // checked one last time, still unpaid
+            if (expired) {
+                p.setStatus(PaymentStatus.EXPIRED);   // checked one last time, still unpaid
+                log.info("Payment {} EXPIRED: Bakong found no transaction for md5={}", id, p.getMd5());
+            }
         } catch (BakongException e) {
             log.warn("Bakong check failed for payment {}: {}", id, e.getMessage());
             // Could not verify: stay PENDING (never assume paid), but do not hang forever.
-            if (now.isAfter(p.getExpiresAt().plus(GIVE_UP_AFTER_EXPIRY))) p.setStatus(PaymentStatus.EXPIRED);
+            if (now.isAfter(p.getExpiresAt().plus(GIVE_UP_AFTER_EXPIRY))) {
+                p.setStatus(PaymentStatus.EXPIRED);
+                log.info("Payment {} EXPIRED: gave up after Bakong errors", id);
+            }
         }
         return p;
     }
@@ -125,7 +133,12 @@ public class PaymentService {
     private void settle(Payment p, BakongTransactionResponse tx, Instant now) {
         boolean amountOk = p.getAmount().compareTo(tx.amount()) == 0;
         boolean currencyOk = p.getCurrency().equalsIgnoreCase(tx.currency());
-        boolean accountOk = tx.toAccountId() == null || tx.toAccountId().equalsIgnoreCase(props.accountId());
+        boolean accountOk =
+                tx.toAccountId() != null
+                        && !tx.toAccountId().isBlank()
+                        && props.accountId() != null
+                        && !props.accountId().isBlank()
+                        && tx.toAccountId().equalsIgnoreCase(props.accountId());
 
         if (amountOk && currencyOk && accountOk && bakong.recordTransaction(p.getId(), p.getMd5(), tx)) {
             p.setStatus(PaymentStatus.PAID);
@@ -145,3 +158,4 @@ public class PaymentService {
         return mapper.toResponse(p, remaining);
     }
 }
+ 
