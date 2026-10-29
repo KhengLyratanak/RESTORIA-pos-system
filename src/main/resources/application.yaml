@@ -2,12 +2,12 @@ spring:
   application:
     name: New Demo
 
-  # Local database. On Render these are replaced by SPRING_DATASOURCE_URL /
-  # SPRING_DATASOURCE_USERNAME / SPRING_DATASOURCE_PASSWORD (your Neon database).
+  # Render sets DB_URL / DB_USERNAME / DB_PASSWORD (your Neon database).
+  # Without them (on your PC) the local database is used.
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/project}
-    username: ${SPRING_DATASOURCE_USERNAME:admin}
-    password: ${SPRING_DATASOURCE_PASSWORD:admin}
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/project}
+    username: ${DB_USERNAME:admin}
+    password: ${DB_PASSWORD:admin}
     driver-class-name: org.postgresql.Driver
 
   servlet:
@@ -29,8 +29,8 @@ server:
 
 config:
   security:
-    # Set JWT_SECRET in Render (and in IntelliJ for local runs). Never commit the real value.
-    secret: ${JWT_SECRET}
+    # Render sets JWT_SECRET. The fallback is for running on your PC only.
+    secret: ${JWT_SECRET:local-dev-only-secret-change-me-0123456789abcdef0123456789abcdef}
     expiration: 3600000
     refresh-token-expiration: 10800000
 
@@ -45,8 +45,8 @@ pagination:
 
 bakong:
   base-url: https://api-bakong.nbc.gov.kh
-  # Set BAKONG_TOKEN in Render (and in IntelliJ for local runs). Never commit the real value.
-  token: ${BAKONG_TOKEN}
+  # Set BAKONG_TOKEN in Render. Without it the app still starts, but KHQR payment checks fail.
+  token: ${BAKONG_TOKEN:}
   account-id: abaakhppxxx@abaa
   account-information: "007902781"
   merchant-account: false
