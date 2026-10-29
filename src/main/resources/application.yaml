@@ -2,10 +2,12 @@ spring:
   application:
     name: New Demo
 
+  # Local database. On Render these are replaced by SPRING_DATASOURCE_URL /
+  # SPRING_DATASOURCE_USERNAME / SPRING_DATASOURCE_PASSWORD (your Neon database).
   datasource:
-    url: jdbc:postgresql://localhost:5432/project
-    username: admin
-    password: admin
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/project}
+    username: ${SPRING_DATASOURCE_USERNAME:admin}
+    password: ${SPRING_DATASOURCE_PASSWORD:admin}
     driver-class-name: org.postgresql.Driver
 
   servlet:
@@ -17,6 +19,7 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
+    open-in-view: false
     properties:
       hibernate:
         format_sql: false
@@ -26,7 +29,8 @@ server:
 
 config:
   security:
-    secret: f486eb1747aad3ee8570034d618de57b994830b303848ae189223b115f31726d
+    # Set JWT_SECRET in Render (and in IntelliJ for local runs). Never commit the real value.
+    secret: ${JWT_SECRET}
     expiration: 3600000
     refresh-token-expiration: 10800000
 
@@ -41,7 +45,8 @@ pagination:
 
 bakong:
   base-url: https://api-bakong.nbc.gov.kh
-  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7ImlkIjoiOGEyNzk4NTkyNjI4NGNlMSJ9LCJpYXQiOjE3OTMxODcwMjEsImV4cCI6MTgwMDk2MzAyMX0.uNCJxIIMEXiy_CZsEKDMaJFTQAEnDFY1-YeU0JPeTJw
+  # Set BAKONG_TOKEN in Render (and in IntelliJ for local runs). Never commit the real value.
+  token: ${BAKONG_TOKEN}
   account-id: abaakhppxxx@abaa
   account-information: "007902781"
   merchant-account: false
