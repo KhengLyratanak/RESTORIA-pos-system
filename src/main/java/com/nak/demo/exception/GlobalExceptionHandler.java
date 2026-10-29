@@ -13,6 +13,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -58,6 +59,11 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Response> handleAuthenticationException(CustomAuthenticationException ex){
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(Response.badRequest("fail",ex.getMessage()));
+    }
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<Response> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
+        return ResponseEntity.badRequest()
+                .body(Response.error("400", "fail", "invalid value for '" + ex.getName() + "', expected yyyy-MM-dd"));
     }
 }
 
