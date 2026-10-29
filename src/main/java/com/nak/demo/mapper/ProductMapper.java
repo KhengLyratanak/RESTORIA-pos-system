@@ -31,11 +31,16 @@ public class ProductMapper {
     }
 
     public ProductResponseDto toDto(Product entity){
-        ProductResponseDto dto = new ProductResponseDto();
+        ProductImageDto dto = new ProductImageDto();
         dto.setId(entity.getId());
         dto.setProductName(entity.getProductName());
         dto.setDescription(entity.getDescription());
         dto.setPrice(entity.getPrice());
+        dto.setImageUrl(entity.getImageUrl());
+        if (entity.getCategory() != null) {
+            dto.setCategoryId(entity.getCategory().getId());
+            dto.setCategoryName(entity.getCategory().getName());
+        }
         dto.setTotalStock(entity.getTotalStock());
         dto.setCreatedAt(entity.getCreatedAt());
         dto.setUpdatedAt(entity.getUpdatedAt());

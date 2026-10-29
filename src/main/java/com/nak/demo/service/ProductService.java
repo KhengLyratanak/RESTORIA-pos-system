@@ -2,7 +2,9 @@ package com.nak.demo.service;
 
 import com.nak.demo.common.config.ApplicationConfiguration;
 import com.nak.demo.dto.base.PagenatedResponse;
+import com.nak.demo.entity.Category;
 import com.nak.demo.entity.Product;
+import com.nak.demo.repository.CategoryRepository;
 import com.nak.demo.exception.model.DuplicateException;
 import com.nak.demo.exception.model.ResourceNotFoundException;
 import com.nak.demo.dto.product.ProductDto;
@@ -14,12 +16,23 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import com.nak.demo.exception.model.UnprocessableEntityException;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 @Service
 public class ProductService {
     @Autowired
     private ProductRepository productRepository;
+    @Autowired
+    private CategoryRepository categoryRepository;
     @Autowired
     private ProductMapper mapper;
 
@@ -81,5 +94,70 @@ public class ProductService {
         List<Product> products = productRepository.findProductsWithFilters(formattedName, minPrice, maxPrice);
         return mapper.toDtoList( products);
     }
-}
 
+    // ----- product photos -----
+    private static final long MAX_IMAGE_BYTES = 2L * 1024 * 1024;
+    private static final Map<String, String> IMAGE_TYPES = Map.of(
+            "image/jpeg", ".jpg", "image/png", ".png", "image/webp", ".webp");
+    /** Folder the photos are written to; served at /uploads/** by UploadConfig. */
+    public static final Path IMAGE_DIR = Paths.get("uploads", "products");
+
+    public String saveImage(Long productId, MultipartFile file) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("product not found with id :" + productId));
+        if (file == null || file.isEmpty()) {
+            throw new UnprocessableEntityException("choose an image file");
+        }
+        String ext = file.getContentType() == null ? null : IMAGE_TYPES.get(file.getContentType());
+        if (ext == null) {
+            throw new UnprocessableEntityException("upload a JPG, PNG or WebP image");
+        }
+        if (file.getSize() > MAX_IMAGE_BYTES) {
+            throw new UnprocessableEntityException("image must be 2 MB or smaller");
+        }
+        String fileName = productId + "-" + UUID.randomUUID() + ext;   // never trust the uploaded file name
+        try {
+            Files.createDirectories(IMAGE_DIR);
+            file.transferTo(IMAGE_DIR.resolve(fileName).toAbsolutePath());
+        } catch (IOException e) {
+            throw new IllegalStateException("could not save the image", e);
+        }
+        deleteImageFile(product.getImageUrl());   // replace: remove the old photo
+        product.setImageUrl("/uploads/products/" + fileName);
+        productRepository.save(product);
+        return product.getImageUrl();
+    }
+
+    public void removeImage(Long productId) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("product not found with id :" + productId));
+        deleteImageFile(product.getImageUrl());
+        product.setImageUrl(null);
+        productRepository.save(product);
+    }
+
+    private void deleteImageFile(String imageUrl) {
+        if (imageUrl == null || !imageUrl.startsWith("/uploads/products/")) return;
+        String name = imageUrl.substring("/uploads/products/".length());
+        if (name.contains("/") || name.contains("\\") || name.contains("..")) return;
+        try {
+            Files.deleteIfExists(IMAGE_DIR.resolve(name));
+        } catch (IOException ignored) {
+            // an old file left behind is harmless
+        }
+    }
+
+    // ----- category -----
+    /** Put a menu item in a category, or take it out of any category when categoryId is null. */
+    public void setCategory(Long productId, Long categoryId) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("product not found with id :" + productId));
+        Category category = null;
+        if (categoryId != null) {
+            category = categoryRepository.findById(categoryId)
+                    .orElseThrow(() -> new ResourceNotFoundException("category not found with id :" + categoryId));
+        }
+        product.setCategory(category);
+        productRepository.save(product);
+    }
+}

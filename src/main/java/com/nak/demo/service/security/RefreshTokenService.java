@@ -23,6 +23,8 @@ public class RefreshTokenService {
 
    private long expiration;
 
+   private long expirationMs;
+
    @PostConstruct
    private void init(){
        this.expiration = appConfig.getSecurity().getRefreshTokenExpiration();
@@ -61,6 +63,16 @@ public class RefreshTokenService {
 
         //generate new rf token
         return this.createRefreshToken(oldToken.getUser());
+    }
+    public void revoke(String token) {
+        refreshTokenRepository.findByToken(token).ifPresent(rt -> {
+            rt.setRevoked(true);
+            refreshTokenRepository.save(rt);
+        });
+    }
+
+    public void revokeAllForUser(User user){
+       refreshTokenRepository.revokeAllByUser(user);
     }
 
     public void deleteExpiredAndRevokedToken(){

@@ -23,7 +23,7 @@ public class PagenatedResponse<T>{
                 page.getNumber(),
                 page.getSize(),
                 page.getTotalPages(),
-                  page.getTotalElements(),
+                page.getTotalElements(),
                 page.isFirst(),
                 page.isLast(),
                 page.hasNext(),
@@ -74,7 +74,7 @@ public class PagenatedResponse<T>{
     private static String buildUrl(String baseUrl, int page, int size){
         StringBuilder url = new StringBuilder(baseUrl);
         url.append("?page=").append(page);
-        url.append("&size").append(size);
+        url.append("&size=").append(size);
 
         return url.toString();
     }

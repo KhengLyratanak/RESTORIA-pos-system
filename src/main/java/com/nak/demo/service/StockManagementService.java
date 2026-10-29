@@ -1,6 +1,8 @@
 package com.nak.demo.service;
 
+import com.nak.demo.entity.OrderItem;
 import com.nak.demo.entity.Stock;
+import com.nak.demo.repository.ProductRepository;
 import com.nak.demo.repository.StockRepository;
 import com.nak.demo.dto.order.OrderItemDto;
 import com.nak.demo.exception.model.UnprocessableEntityException;
@@ -17,6 +19,8 @@ public class StockManagementService {
     @Autowired
     private StockRepository stockRepository;
 
+    @Autowired
+    private ProductRepository productRepository;
     public void reserveStockforOrder(List<OrderItemDto> orderItemDtos){
         //map for product ids
         List<Long> productIds = orderItemDtos.stream()
@@ -59,5 +63,27 @@ public class StockManagementService {
             }
         }
         stockRepository.saveAll(stocks);
+    }
+    public void returnStockForOrder(List<OrderItem> orderItems){
+        if (orderItems == null) return;
+
+        Map<Long,Long> quantities = orderItems.stream()
+                .collect(Collectors.groupingBy(OrderItem::getProductId,
+                        Collectors.summingLong(OrderItem::getQuantity)));
+
+        for (Map.Entry<Long,Long> entry: quantities.entrySet()){
+            Long productId = entry.getKey();
+            long qty = entry.getValue();
+            Stock stock = stockRepository.findFirstByProductIdOrderByCreatedAtDesc(productId)
+                    .orElseGet(() -> {
+                        Stock fresh = new Stock();
+                        fresh.setQuantity(0L);
+                        fresh.setProduct(productRepository.getReferenceById(productId));
+                        return fresh;
+                    });
+            long current = stock.getQuantity() == null ? 0L :stock.getQuantity();
+            stock.setQuantity(current+qty);
+            stockRepository.save(stock);
+        }
     }
 }

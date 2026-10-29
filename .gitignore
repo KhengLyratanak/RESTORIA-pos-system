@@ -31,3 +31,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Uploaded product photos (runtime data, not source) ###
+uploads/

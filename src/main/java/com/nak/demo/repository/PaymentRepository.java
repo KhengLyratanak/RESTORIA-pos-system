@@ -8,12 +8,21 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 public interface PaymentRepository extends JpaRepository<Payment, UUID> {
+
+    boolean existsByOrderIdAndStatus(Long orderId, PaymentStatus status);
+
+    @Query("SELECT SUM(p.amount) FROM Payment p " +
+            "WHERE p.status = :status AND p.paidAt >= :from AND p.paidAt < :to")
+    BigDecimal sumAmountByStatusPaidBetween(@Param("status") PaymentStatus status,
+                                            @Param("from") Instant from,
+                                            @Param("to") Instant to);
 
     Optional<Payment> findFirstByOrderIdAndStatusAndExpiresAtAfter(Long orderId, PaymentStatus status, Instant now);
 

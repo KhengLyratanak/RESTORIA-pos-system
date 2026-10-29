@@ -2,6 +2,7 @@ package com.nak.demo.repository;
 
 import com.nak.demo.entity.Product;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -21,11 +22,9 @@ public interface ProductRepository extends JpaRepository<Product,Long> {
             @Param("maxPrice") Double maxPrice
     );
     Boolean existsByProductName(String productName);
+
+    /** Takes every menu item out of a category (used before the category is deleted). */
+    @Modifying
+    @Query("UPDATE Product p SET p.category = null WHERE p.category.id = :categoryId")
+    int clearCategory(@Param("categoryId") Long categoryId);
 }
-
-
-
-
-
-
-

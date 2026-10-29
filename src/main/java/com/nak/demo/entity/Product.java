@@ -24,6 +24,8 @@ public class Product {
     private Double price;
 
     private String description;
+    @Column(name = "image_url")
+    private String imageUrl;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

@@ -8,6 +8,6 @@ public class RefreshTokenResponeDto extends AuthResponseDto {
 
     public RefreshTokenResponeDto(String accessToken, String refreshToken,String tokenType) {
         super(accessToken, refreshToken);
-        this.tokenType = tokenType;
+        setTokenType(tokenType ==null ? "Bearer" : tokenType.trim());
     }
 }

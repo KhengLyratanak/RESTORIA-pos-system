@@ -12,6 +12,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -48,8 +50,11 @@ public class ProductController {
     @GetMapping("/search")
     public ResponseEntity<Response> seaerchProducts(
             @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "categoryId", required = false) Long categoryId,
             @RequestParam(value = "minPrice", required = false) Double minPrice,
-            @RequestParam(value = "maxPrice", required = false) Double maxPrice
+            @RequestParam(value = "maxPrice", required = false) Double maxPrice,
+            @RequestParam(value = "inStock", required = false) Boolean inStock,
+            @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable
     ) {
             List<ProductResponseDto> products = productService.searchProduct
                     (name,minPrice,maxPrice);
@@ -76,5 +81,27 @@ public class ProductController {
          productService.deleteProduct(productId);
          return ResponseEntity.status(HttpStatus.OK)
                  .body(Response.success("200","success","successfully deleted product"));
+    }
+
+    /** Upload or replace a menu item's photo (JPG, PNG or WebP, max 2 MB). Returns the new image URL. */
+    @PostMapping(value = "/{id}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Response> uploadImage(@PathVariable("id") Long productId, @RequestParam("file") MultipartFile file) {
+        String url = productService.saveImage(productId, file);
+        return ResponseEntity.ok(Response.success("200", "success", "successfully uploaded image", url));
+    }
+
+    /** Remove a menu item's photo. */
+    @DeleteMapping("/{id}/image")
+    public ResponseEntity<Response> deleteImage(@PathVariable("id") Long productId) {
+        productService.removeImage(productId);
+        return ResponseEntity.ok(Response.success("200", "success", "successfully removed image"));
+    }
+
+    /** Set a menu item's category: PATCH /api/v1/products/{id}/category?categoryId=3 (no categoryId = none). */
+    @PatchMapping("/{id}/category")
+    public ResponseEntity<Response> setCategory(@PathVariable("id") Long productId,
+                                                @RequestParam(value = "categoryId", required = false) Long categoryId) {
+        productService.setCategory(productId, categoryId);
+        return ResponseEntity.ok(Response.success("200", "success", "successfully updated category"));
     }
 }

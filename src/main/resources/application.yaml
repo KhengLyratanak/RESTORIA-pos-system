@@ -8,6 +8,11 @@ spring:
     password: admin
     driver-class-name: org.postgresql.Driver
 
+  servlet:
+    multipart:
+      max-file-size: 2MB
+      max-request-size: 3MB
+
   jpa:
     hibernate:
       ddl-auto: update
@@ -46,3 +51,8 @@ bakong:
   merchant-city: Phnom Penh
   terminal-label: POS-1
   qr-ttl-seconds: 600
+
+# On startup, the user named in BOOTSTRAP_ADMIN (name or email) is given the ADMIN role.
+# Off unless that environment variable is set — never leave it set on a public server.
+app:
+  bootstrap-admin: ${BOOTSTRAP_ADMIN:}
