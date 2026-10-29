@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.naming.AuthenticationException;
+
 @RestController
 @RequestMapping("/api/v1/auth")
 public class AuthController {
@@ -37,10 +39,16 @@ public class AuthController {
                 .body(Response.success("200","success","successfully login",dto));
     }
     @PostMapping("/refresh")
-    public ResponseEntity<Response> refreshToken (@Valid @RequestBody RefreshTokenDto payload){
+    public ResponseEntity<Response> refreshToken (@Valid @RequestBody RefreshTokenDto payload) throws AuthenticationException {
         RefreshTokenResponeDto dto = authService.refreshToken(payload);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(Response.success("200","success","successfully refreshed token ",dto));
+    }
 
+    @PostMapping("/logout")
+    public ResponseEntity<Response> logout (@Valid @RequestBody RefreshTokenDto payload){
+        authService.logout(payload);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(Response.success("200","success","successfully logged out"));
     }
 }

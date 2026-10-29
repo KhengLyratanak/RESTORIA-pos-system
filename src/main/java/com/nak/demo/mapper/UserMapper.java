@@ -1,5 +1,7 @@
 package com.nak.demo.mapper;
 
+import com.nak.demo.common.enums.role;
+import com.nak.demo.dto.auth.RegisterDto;
 import com.nak.demo.entity.User;
 import com.nak.demo.dto.user.UpdateUserDto;
 import com.nak.demo.dto.user.UserDto;
@@ -16,14 +18,31 @@ public class UserMapper {
     public User toEntity(UserDto dto){
         User entity = new User();
 
-        entity.setName(dto.getName());
+        entity.setName(dto.getName().trim());
         entity.setPassword(dto.getPassword());
-        entity.setRole(dto.getRole());
+        entity.setRole(normaliseRole(dto.getRole()));
         entity.setAge(dto.getAge());
-        entity.setAddress(dto.getAddress());
-        entity.setEmail(dto.getEmail());
+        entity.setAddress(dto.getAddress().trim());
+        entity.setEmail(dto.getEmail().trim().toLowerCase());
         entity.setCreatedAt(LocalDateTime.now());
         return entity;
+    }
+
+    /** Self-registration: role is always USER, whatever the client sends. */
+    public User toEntity(RegisterDto dto){
+        User entity = new User();
+        entity.setName(dto.getName().trim());
+        entity.setEmail(dto.getEmail().trim().toLowerCase());
+        entity.setPassword(dto.getPassword());
+        entity.setAge(dto.getAge());
+        entity.setAddress(dto.getAddress().trim());
+        entity.setRole(role.USER.name());
+        entity.setCreatedAt(LocalDateTime.now());
+        return entity;
+    }
+
+    public static String normaliseRole(String value){
+        return (value == null || value.isBlank()) ? role.USER.name() : value.trim().toUpperCase();
     }
     public void updateEntityFromDto(User entity, UpdateUserDto dto){
         if (entity == null || dto == null){

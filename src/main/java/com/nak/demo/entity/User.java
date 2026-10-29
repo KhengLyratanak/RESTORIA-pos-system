@@ -18,8 +18,11 @@ public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(unique = true, nullable = false, length = 100)
     private String email;
+    @Column(nullable = false)
     private String password;
+    @Column(unique = true, nullable = false, length = 30)
     private String name;
     private Integer age;
     private String address;
@@ -41,7 +44,10 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_" + this.role));
+        String normalised = this.role == null || this.role.isBlank() ? "USER" : this.role.trim().toUpperCase();
+        // Both spellings, so a SecurityConfig rule written as hasRole("ADMIN") or hasRole("admin") matches.
+        return List.of(new SimpleGrantedAuthority("ROLE_" + normalised),
+                new SimpleGrantedAuthority("ROLE_" + normalised.toLowerCase()));
     }
 
     @Override

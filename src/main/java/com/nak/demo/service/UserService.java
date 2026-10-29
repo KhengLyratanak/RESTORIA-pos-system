@@ -1,14 +1,13 @@
 package com.nak.demo.service;
 
 import com.nak.demo.entity.User;
-import com.nak.demo.dto.user.ChangePasswordDto;
 import com.nak.demo.dto.user.UpdateUserDto;
 import com.nak.demo.exception.model.ResourceNotFoundException;
 import com.nak.demo.repository.UserRepository;
 
 import com.nak.demo.dto.user.UserResponseDto;
 import com.nak.demo.mapper.UserMapper;
-import com.nak.demo.service.security.JwtUtil;
+import com.nak.demo.exception.model.DuplicateException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -17,7 +16,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Objects;
 
 @Service
 public class UserService implements UserDetailsService {
@@ -27,12 +25,9 @@ public class UserService implements UserDetailsService {
     @Autowired
     private UserMapper mapper;
 
-    @Autowired
-    private JwtUtil jwtUtil;
 
     public List<UserResponseDto> listUser() {
         List<User> users = userRepository.findAll();
-        List<UserResponseDto> dtos = mapper.toDtoList(users);
         return mapper.toDtoList(users);
     }
 
@@ -41,8 +36,6 @@ public class UserService implements UserDetailsService {
                 .orElseThrow(() ->
                         new ResourceNotFoundException("user not found with id :" + userId));
 
-        String token = jwtUtil.generateToken(user);
-        System.out.println("Token: " + token);
         return mapper.toDto(user);
 
     }
@@ -53,6 +46,10 @@ public class UserService implements UserDetailsService {
                 .orElseThrow(() ->
                         new ResourceNotFoundException("user not found with id :" + userId));
 
+        String newName = payload.getName().trim();
+        if (!newName.equalsIgnoreCase(existing.getName()) && userRepository.existsByNameIgnoreCase(newName)) {
+            throw new DuplicateException("username already exists");
+        }
         mapper.updateEntityFromDto(existing, payload);
 
         userRepository.save(existing);
@@ -79,28 +76,11 @@ public class UserService implements UserDetailsService {
         return mapper.toDtoList(user);
     }
 
-    public void changePassword(ChangePasswordDto dto, Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("user not found with id :" + userId));
-        //if current password not the same with oldpassword
-        if (!Objects.equals(user.getPassword(), dto.getOldPassword())) {
-            throw new ResourceNotFoundException("old password is incorrect,please return the correct password");
-        }
-        if (!Objects.equals(dto.getNewPassword(), dto.getConfirmPassword())) {
-            throw new ResourceNotFoundException("new password and confirm password must be the same");
-        }
-        mapper.updateEntityChangePassword(user, dto.getNewPassword());
-        userRepository.save(user);
-
-    }
-
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        // log in with either username or email (email is case-insensitive)
         return userRepository.findByName(username)
-                .or(() -> userRepository.findByEmail(username))
-                .orElseThrow(() -> {
-                    throw new UsernameNotFoundException("user not found" + username);
-                });
+                .or(() -> userRepository.findByEmailIgnoreCase(username))
+                .orElseThrow(() -> new UsernameNotFoundException("user not found: " + username));
     }
 }

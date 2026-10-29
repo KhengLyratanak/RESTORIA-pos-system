@@ -5,11 +5,13 @@ import com.nak.demo.dto.auth.AuthDto;
 import com.nak.demo.dto.auth.AuthResponseDto;
 import com.nak.demo.dto.auth.RefreshTokenDto;
 import com.nak.demo.dto.auth.RefreshTokenResponeDto;
+import com.nak.demo.dto.user.ChangePasswordDto;
 import com.nak.demo.dto.user.UserDto;
 import com.nak.demo.entity.RefreshToken;
 import com.nak.demo.entity.User;
 import com.nak.demo.exception.model.CustomAuthenticationException;
 import com.nak.demo.exception.model.DuplicateException;
+import com.nak.demo.exception.model.ResourceNotFoundException;
 import com.nak.demo.mapper.UserMapper;
 import com.nak.demo.repository.UserRepository;
 import com.nak.demo.service.UserService;
@@ -20,8 +22,10 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.naming.AuthenticationException;
+import java.util.Objects;
 
 
 @Service
@@ -85,24 +89,51 @@ public class AuthService {
         return new AuthResponseDto(accessToken,refreshToken.getToken());
     }
 
-    public RefreshTokenResponeDto refreshToken (RefreshTokenDto payload) {
-        String token = payload.getRefreshToken();
-        // find by token
-       RefreshToken refreshToken = refreshTokenService.findByToken(token);
+    public RefreshTokenResponeDto refreshToken(RefreshTokenDto payload) throws AuthenticationException {
+        RefreshToken refreshToken = refreshTokenService.findByToken(payload.getRefreshToken());
+        refreshToken = refreshTokenService.verifyToken(refreshToken);
 
-       try{
-           refreshToken = refreshTokenService.verifyToken(refreshToken);
-
-       }catch (AuthenticationException e){
-            throw new CustomAuthenticationException("invalid refresh token");
-       }
-        //get user from refresh token
         User user = refreshToken.getUser();
-
-        // generate new access token
         String newAccessToken = jwtUtil.generateToken(user);
-        //rotate refresh token
+        // rotate: old refresh token is revoked, a new one is issued
         RefreshToken newRefreshToken = refreshTokenService.rotateRefreshToken(refreshToken);
-           return new RefreshTokenResponeDto(newAccessToken,newRefreshToken.getToken(),"Bearer ");
+        return new RefreshTokenResponeDto(newAccessToken, newRefreshToken.getToken(), "Bearer");
     }
+    @Transactional
+    public void changePassword(ChangePasswordDto dto, Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("user not found with id :" + userId));
+        //if current password not the same with oldpassword
+        if (!Objects.equals(user.getPassword(), dto.getOldPassword())) {
+            throw new ResourceNotFoundException("old password is incorrect,please return the correct password");
+        }
+        if (!Objects.equals(dto.getNewPassword(), dto.getConfirmPassword())) {
+            throw new ResourceNotFoundException("new password and confirm password must be the same");
+        }
+        mapper.updateEntityChangePassword(user, dto.getNewPassword());
+        userRepository.save(user);
+
+    }
+
+    @Transactional
+    public void logout(RefreshTokenDto payload){
+        refreshTokenService.revoke(payload.getRefreshToken());
+    }
+
+    private void assertUnique(String name, String email) {
+        if (userRepository.existsByNameIgnoreCase(name.trim())) {
+            throw new DuplicateException("username already exists");
+        }
+        if (userRepository.existsByEmailIgnoreCase(email.trim())) {
+            throw new DuplicateException("email already exists");
+        }
+    }
+
+    private AuthResponseDto issueTokens(User user) {
+        String accessToken = jwtUtil.generateToken(user);
+        RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
+        return new AuthResponseDto(accessToken, refreshToken.getToken(), mapper.toDto(user));
+    }
+
 }
