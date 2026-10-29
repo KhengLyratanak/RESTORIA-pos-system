@@ -23,9 +23,15 @@ public class Order {
     private BigDecimal totalAmount = BigDecimal.ZERO;
     private BigDecimal totalPrice = BigDecimal.ZERO;
     private BigDecimal grandTotal = BigDecimal.ZERO;
-    private Double total = 0.0;             // → getTotal() (needs a getter)
+    private Double total = 0.0;
     @OneToMany(mappedBy = "order",cascade = CascadeType.ALL)
     private List<OrderItem> items;
+    @Column(name = "cancelled_at")
+    private LocalDateTime cancelledAt;
+
+    @Column(name = "cancel_reason")
+    private String cancelReason;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
@@ -34,9 +40,9 @@ public class Order {
 
     @PrePersist
     public void prePersist() {
-    this.createdAt = LocalDateTime.now();}
+        this.createdAt = LocalDateTime.now();}
 
     @PreUpdate
-    public void preUpdate(){ 
+    public void preUpdate(){
         this.updatedAt = LocalDateTime.now();}
-    }
+}

@@ -1,5 +1,6 @@
 package com.nak.demo.dto.order;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Data;
@@ -22,6 +23,12 @@ public class OrderResponseDto {
 
     @JsonProperty("updated_at")
     private LocalDateTime updatedAt;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("cancelled_at")
+    private LocalDateTime cancelledAt;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("cancel_reason")
+    private String cancelReason;
 
     @JsonProperty("items")
     private List<OrderItemResponseDto> items;

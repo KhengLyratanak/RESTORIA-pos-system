@@ -1,10 +1,12 @@
 package com.nak.demo.controller;
 
+import com.nak.demo.dto.order.CancelOrderDto;
 import com.nak.demo.service.OrderService;
 import com.nak.demo.dto.base.Response;
 import com.nak.demo.dto.order.OrderCreateDto;
 import com.nak.demo.dto.order.OrderResponseDto;
 import com.nak.demo.dto.order.OrderUpdateDto;
+import jakarta.persistence.Entity;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -27,6 +29,16 @@ public class OrderController {
          return ResponseEntity.status(HttpStatus.CREATED)
                  .body(Response.success("201","sucess","successfully created order"));
     }
+
+    @PostMapping("/{id}/cancel")
+    public ResponseEntity<Response> cancelOrder(@PathVariable("id") Long orderId,
+                                                @Valid @RequestBody(required = false)CancelOrderDto payload ){
+        String reason = payload == null ? null : payload.getReason();
+        OrderResponseDto cancelled = orderService.cancelOrder(orderId,reason);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(Response.success("200","success","successfully cancelled order"));
+    }
+
     @GetMapping
     public ResponseEntity<Response> listOrders(){
         List<OrderResponseDto> orders = orderService.listsOrder();

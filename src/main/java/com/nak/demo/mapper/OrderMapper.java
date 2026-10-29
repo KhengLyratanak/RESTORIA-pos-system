@@ -45,7 +45,9 @@ public class OrderMapper {
         dto.setCreatedAt(entity.getCreatedAt());
         dto.setUpdatedAt(entity.getUpdatedAt());
         dto.setStatus(entity.getStatus());
-
+        dto.setCancelledAt(entity.getCancelledAt());
+        dto.setCancelReason(entity.getCancelReason());
+        
         if (entity.getItems() != null && !entity.getItems().isEmpty()) {
             List<OrderItemResponseDto> orderItemDtos =
                     orderItemMapper.toResponseDtoList(entity.getItems());

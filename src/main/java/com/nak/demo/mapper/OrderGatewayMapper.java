@@ -48,6 +48,9 @@ public class OrderGatewayMapper {
         return status.equalsIgnoreCase("SUCCESS")
                 || status.equalsIgnoreCase("PAID");
     }
+    public boolean isCancelled(Order o){
+        return OrderStatus.CANCELLED.name().equalsIgnoreCase(String.valueOf(o.getStatus()));
+    }
 
     public void applyPaid(Order o) {
         o.setStatus(OrderStatus.SUCCESS.name());
