@@ -39,7 +39,8 @@ public class OrderMapper {
             return null;
         }
 
-        OrderResponseDto dto = new OrderResponseDto();
+        OrderNoteDto dto = new OrderNoteDto();
+        dto.setNote(entity.getNote());
 
         dto.setId(entity.getId());
         dto.setCreatedAt(entity.getCreatedAt());

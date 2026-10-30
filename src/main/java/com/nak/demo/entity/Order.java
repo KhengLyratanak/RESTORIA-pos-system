@@ -32,6 +32,10 @@ public class Order {
     @Column(name = "cancel_reason")
     private String cancelReason;
 
+    /** Cashier's note for the kitchen, e.g. "Take away · no onion". */
+    @Column(name = "note", length = 255)
+    private String note;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
