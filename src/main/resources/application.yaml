@@ -60,3 +60,4 @@ bakong:
 # Off unless that environment variable is set — never leave it set on a public server.
 app:
   bootstrap-admin: ${BOOTSTRAP_ADMIN:}
+  cloudinary-url: ${CLOUDINARY_URL:}

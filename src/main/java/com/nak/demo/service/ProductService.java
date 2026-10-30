@@ -11,6 +11,7 @@ import com.nak.demo.dto.product.ProductDto;
 import com.nak.demo.repository.ProductRepository;
 import com.nak.demo.dto.product.ProductResponseDto;
 import com.nak.demo.mapper.ProductMapper;
+import com.nak.demo.web.CloudinaryStorage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -38,6 +39,9 @@ public class ProductService {
 
     @Autowired
     private ApplicationConfiguration appConfig;
+
+    @Autowired
+    private CloudinaryStorage cloudinary;
 
     public PagenatedResponse listProductWithPagination(Pageable pageable) {
         Page<Product> productPages = productRepository.findAll(pageable);
@@ -115,15 +119,26 @@ public class ProductService {
         if (file.getSize() > MAX_IMAGE_BYTES) {
             throw new UnprocessableEntityException("image must be 2 MB or smaller");
         }
-        String fileName = productId + "-" + UUID.randomUUID() + ext;   // never trust the uploaded file name
-        try {
-            Files.createDirectories(IMAGE_DIR);
-            file.transferTo(IMAGE_DIR.resolve(fileName).toAbsolutePath());
-        } catch (IOException e) {
-            throw new IllegalStateException("could not save the image", e);
+        String baseName = productId + "-" + UUID.randomUUID();   // never trust the uploaded file name
+        String fileName = baseName + ext;
+        String newUrl;
+        if (cloudinary.enabled()) {
+            try {
+                newUrl = cloudinary.upload(file.getBytes(), fileName, baseName);   // survives server restarts
+            } catch (IOException e) {
+                throw new IllegalStateException("could not read the image", e);
+            }
+        } else {
+            try {
+                Files.createDirectories(IMAGE_DIR);
+                file.transferTo(IMAGE_DIR.resolve(fileName).toAbsolutePath());
+            } catch (IOException e) {
+                throw new IllegalStateException("could not save the image", e);
+            }
+            newUrl = "/uploads/products/" + fileName;
         }
         deleteImageFile(product.getImageUrl());   // replace: remove the old photo
-        product.setImageUrl("/uploads/products/" + fileName);
+        product.setImageUrl(newUrl);
         productRepository.save(product);
         return product.getImageUrl();
     }
@@ -137,6 +152,10 @@ public class ProductService {
     }
 
     private void deleteImageFile(String imageUrl) {
+        if (cloudinary.isCloudinaryUrl(imageUrl)) {
+            cloudinary.delete(imageUrl);
+            return;
+        }
         if (imageUrl == null || !imageUrl.startsWith("/uploads/products/")) return;
         String name = imageUrl.substring("/uploads/products/".length());
         if (name.contains("/") || name.contains("\\") || name.contains("..")) return;
