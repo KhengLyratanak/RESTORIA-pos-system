@@ -55,7 +55,6 @@ public class ReportService {
     @Transactional(readOnly = true)
     public SalesReportDto salesReport(LocalDate from, LocalDate to, String groupByParam) {
 
-        // ---- end date: use 'to' if given, otherwise today
         LocalDate end;
         if (to != null) {
             end = to;
@@ -63,7 +62,6 @@ public class ReportService {
             end = LocalDate.now(zone);
         }
 
-        // ---- start date: use 'from' if given, otherwise 29 days before end (30 days inclusive)
         LocalDate start;
         if (from != null) {
             start = from;
@@ -80,14 +78,12 @@ public class ReportService {
             throw new UnprocessableEntityException("date range can be at most " + MAX_RANGE_DAYS + " days");
         }
 
-        // half-open range [start 00:00, day after end 00:00) so the whole 'to' day is included
         LocalDateTime fromTime = start.atStartOfDay();
         LocalDateTime toTime = end.plusDays(1).atStartOfDay();
 
         List<Order> paidOrders = orderRepository
                 .findByStatusIgnoreCaseAndCreatedAtGreaterThanEqualAndCreatedAtLessThan(PAID, fromTime, toTime);
 
-        // ---- summary
         BigDecimal revenue = paidOrders.stream().map(this::orderAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
         long orderCount = paidOrders.size();
 
@@ -112,7 +108,6 @@ public class ReportService {
         SalesReportDto.Summary summary = new SalesReportDto.Summary(
                 orderCount, money(revenue), money(average), itemsSold, cancelled);
 
-        // ---- per period (empty periods included, so charts have no gaps)
         Map<String, List<Order>> byPeriod = paidOrders.stream()
                 .collect(Collectors.groupingBy(o -> periodKey(o.getCreatedAt().toLocalDate(), groupBy)));
         List<SalesReportDto.Period> periods = new ArrayList<>();
@@ -123,14 +118,12 @@ public class ReportService {
             periods.add(new SalesReportDto.Period(key, orders.size(), money(periodRevenue)));
         }
 
-        // ---- payment methods (by the time the money was received)
         Instant fromInstant = fromTime.atZone(zone).toInstant();
         Instant toInstant = toTime.atZone(zone).toInstant();
         BigDecimal cash = cashPaymentRepository.sumTotalPaidBetween(fromInstant, toInstant);
         BigDecimal khqr = paymentRepository.sumAmountByStatusPaidBetween(PaymentStatus.PAID, fromInstant, toInstant);
         SalesReportDto.PaymentMethods methods = new SalesReportDto.PaymentMethods(money(cash), money(khqr));
 
-        // ---- top products by quantity
         List<Object[]> rows = orderItemRepository.findTopProducts(PAID, fromTime, toTime, PageRequest.of(0, TOP_PRODUCTS));
         List<Long> ids = rows.stream().map(r -> (Long) r[0]).toList();
         Map<Long, String> names = productRepository.findAllById(ids).stream()
@@ -212,4 +205,4 @@ public class ReportService {
         }
         return startOfPeriod.toString();
     }
-}
+}

@@ -42,7 +42,6 @@ public class UserService implements UserDetailsService {
 
     public void updateUser(UpdateUserDto payload, Long userId) {
         User existing = userRepository.findById(userId)
-//IF USER NOT FOUND then response 404
                 .orElseThrow(() ->
                         new ResourceNotFoundException("user not found with id :" + userId));
 
@@ -62,7 +61,6 @@ public class UserService implements UserDetailsService {
             throw new ResourceNotFoundException("user not found with id :" + userId);
         }
 
-        // user found , then delete
         userRepository.deleteById(userId);
 
 
@@ -78,9 +76,8 @@ public class UserService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        // log in with either username or email (email is case-insensitive)
         return userRepository.findByName(username)
                 .or(() -> userRepository.findByEmailIgnoreCase(username))
                 .orElseThrow(() -> new UsernameNotFoundException("user not found: " + username));
     }
-}
+}

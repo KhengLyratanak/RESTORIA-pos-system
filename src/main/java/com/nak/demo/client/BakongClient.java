@@ -36,7 +36,7 @@ public class BakongClient {
     public JsonNode checkTransactionByMd5(String md5) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setBearerAuth(props.token());   // the token stays on the server
+        headers.setBearerAuth(props.token());
 
         String url = props.baseUrl() + "/v1/check_transaction_by_md5";
         try {

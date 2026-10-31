@@ -38,19 +38,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             jwtToken = requestTokenHeader.substring(7);
 
             try {
-              // extract username from token
                 username = jwtUtil.extractUsername(jwtToken);
             } catch (Exception e) {
                 throw e;
             }
         }
 
-        // username not null and user does not have authentication yet
         if(username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            // operation to DB
             UserDetails userDetails = userService.loadUserByUsername(username);
 
-            // verify if jwt token is valid
             if(jwtUtil.validateToken(jwtToken,userDetails)) {
                 UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
                         new UsernamePasswordAuthenticationToken(userDetails,null,userDetails.getAuthorities());
@@ -65,4 +61,4 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         filterChain.doFilter(request,response);
     }
-}
+}

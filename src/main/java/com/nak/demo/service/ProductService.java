@@ -66,7 +66,6 @@ public class ProductService {
             return mapper.toDto(product);
     }
     public void createProduct(ProductDto product) {
-        //validate if product is already exists
         if (productRepository.existsByProductName(product.getName())) {
             throw new DuplicateException("product is already existed");
         }
@@ -99,7 +98,6 @@ public class ProductService {
         return mapper.toDtoList( products);
     }
 
-    // ----- product photos -----
     private static final long MAX_IMAGE_BYTES = 2L * 1024 * 1024;
     private static final Map<String, String> IMAGE_TYPES = Map.of(
             "image/jpeg", ".jpg", "image/png", ".png", "image/webp", ".webp");
@@ -119,12 +117,12 @@ public class ProductService {
         if (file.getSize() > MAX_IMAGE_BYTES) {
             throw new UnprocessableEntityException("image must be 2 MB or smaller");
         }
-        String baseName = productId + "-" + UUID.randomUUID();   // never trust the uploaded file name
+        String baseName = productId + "-" + UUID.randomUUID();
         String fileName = baseName + ext;
         String newUrl;
         if (cloudinary.enabled()) {
             try {
-                newUrl = cloudinary.upload(file.getBytes(), fileName, baseName);   // survives server restarts
+                newUrl = cloudinary.upload(file.getBytes(), fileName, baseName);
             } catch (IOException e) {
                 throw new IllegalStateException("could not read the image", e);
             }
@@ -137,7 +135,7 @@ public class ProductService {
             }
             newUrl = "/uploads/products/" + fileName;
         }
-        deleteImageFile(product.getImageUrl());   // replace: remove the old photo
+        deleteImageFile(product.getImageUrl());
         product.setImageUrl(newUrl);
         productRepository.save(product);
         return product.getImageUrl();
@@ -162,11 +160,9 @@ public class ProductService {
         try {
             Files.deleteIfExists(IMAGE_DIR.resolve(name));
         } catch (IOException ignored) {
-            // an old file left behind is harmless
         }
     }
 
-    // ----- category -----
     /** Put a menu item in a category, or take it out of any category when categoryId is null. */
     public void setCategory(Long productId, Long categoryId) {
         Product product = productRepository.findById(productId)

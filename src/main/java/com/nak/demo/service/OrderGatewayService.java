@@ -4,7 +4,7 @@ import com.nak.demo.dto.response.PayableOrderResponse;
 import com.nak.demo.entity.Order;
 import com.nak.demo.exception.model.InvalidPaymentException;
 import com.nak.demo.mapper.OrderGatewayMapper;
-import com.nak.demo.repository.OrderRepository;        // <-- your existing repository
+import com.nak.demo.repository.OrderRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,4 +47,4 @@ public class OrderGatewayService {
         return orderRepository.findById(orderId)
                 .orElseThrow(() -> new InvalidPaymentException("Order not found"));
     }
-}
+}

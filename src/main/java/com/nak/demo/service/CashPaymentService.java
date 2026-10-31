@@ -32,7 +32,6 @@ public class CashPaymentService {
         if (orderId == null) throw new InvalidPaymentException("orderId is required");
         if (received == null || received.signum() <= 0) throw new InvalidPaymentException("Enter the cash received");
 
-        // The total always comes from the server, never from the browser.
         var order = orders.getPayableOrder(orderId);
         if (received.compareTo(order.amount()) < 0) {
             throw new InvalidPaymentException("Cash received is less than the total");
@@ -45,4 +44,4 @@ public class CashPaymentService {
         orders.markPaid(orderId, null);
         return mapper.toResponse(saved);
     }
-}
+}

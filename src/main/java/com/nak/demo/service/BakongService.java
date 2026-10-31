@@ -42,7 +42,6 @@ public class BakongService {
         int errorCode = body.path("errorCode").asInt(-1);
         String message = body.path("responseMessage").asText("?");
 
-        // Log Bakong's real answer so it is visible in the console.
         log.info("Bakong reply for md5 {}: responseCode={}, errorCode={}, message={}",
                 md5, code, errorCode, message);
 
@@ -50,12 +49,10 @@ public class BakongService {
             return Optional.of(mapper.toTransaction(body.get("data")));
         }
 
-        // responseCode 1 is used for ALL failures, so only a real "not found" means "not paid yet".
         if (code == 1 && isNotFound(errorCode, message)) {
             return Optional.empty();
         }
 
-        // Anything else (Unauthorized, bad request, ...) is an error, not "unpaid".
         throw new BakongException("Bakong rejected the request: errorCode=" + errorCode
                 + ", message=" + message);
     }
@@ -65,10 +62,9 @@ public class BakongService {
         return errorCode == 3 || m.contains("not found") || m.contains("could not be found");
     }
 
-    @Transactional   // joins the payment's transaction, so recording and settling succeed or fail together
+    @Transactional
     public boolean recordTransaction(UUID paymentId, String md5, BakongTransactionResponse tx) {
         if (tx.hash() != null && logRepository.existsByBakongHash(tx.hash())) {
-            // Already recorded: acceptable only if it belongs to this same payment.
             return logRepository.existsByBakongHashAndPaymentId(tx.hash(), paymentId);
         }
         logRepository.save(mapper.toLog(paymentId, md5, tx, clock.instant()));
@@ -77,10 +73,10 @@ public class BakongService {
 
     public BakongHealthResponse health() {
         try {
-            findTransaction(HEALTH_MD5);   // a valid token gets a clean 'not found' answer
+            findTransaction(HEALTH_MD5);
             return new BakongHealthResponse(true, "Bakong is reachable and accepted the token");
         } catch (BakongException e) {
             return new BakongHealthResponse(false, e.getMessage());
         }
     }
-}
+}

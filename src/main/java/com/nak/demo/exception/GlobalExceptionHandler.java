@@ -43,7 +43,6 @@ public class GlobalExceptionHandler {
             String fieldName = ((FieldError) error).getField();
             String message = error.getDefaultMessage();
 
-            // insert into errors map
             errors.put(fieldName,message);
         });
 

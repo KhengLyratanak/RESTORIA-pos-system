@@ -29,7 +29,6 @@ public class SupplierService {
     }
 
     public void createSupplier(SupplierDto dto) {
-        // if duplicate supplier name , then reject
         if(supplierRepository.existsByName(dto.getName())) {
                 throw new DuplicateException("supplier already existed");
         }
@@ -43,7 +42,6 @@ public class SupplierService {
     public void updateSupplier(Long supplierId, SupplierUpdateDto dto) {
         Supplier existingSupplier = supplierRepository.findById(supplierId)
 
-                // if supplier not found, return 404
                 .orElseThrow(() ->
                         new ResourceNotFoundException("supplier not found with :" + supplierId));
 
@@ -63,4 +61,4 @@ public class SupplierService {
 
     }
 
-}
+}

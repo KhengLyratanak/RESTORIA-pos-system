@@ -12,7 +12,6 @@ public class RefreshTokenCleanupSchedule {
     private RefreshTokenService refreshTokenService;
     @Scheduled(cron="0 0 */3 * * * ")
     public void cleanupExpiredAndRevokedToken(){
-        //execute to clean up tokens
         refreshTokenService.deleteExpiredAndRevokedToken();
 
     }

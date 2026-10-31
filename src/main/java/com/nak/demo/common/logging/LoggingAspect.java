@@ -23,9 +23,7 @@ public class LoggingAspect {
     @Around("execution(* com.nak.demo.service..*(..))")
     public Object logServiceMethods(ProceedingJoinPoint joinPoint) throws Throwable {
         Logger log = LoggerFactory.getLogger(joinPoint.getTarget().getClass());
-        // get method name , e.g. listStocks()
         String methodName = joinPoint.getSignature().getName();
-        // get class name , e.g. StockService
         String target = joinPoint.getTarget().getClass().getSimpleName();
         long startTime = System.currentTimeMillis();
         String requestId = MDC.get(RequestConstant.REQUEST_ID);
@@ -35,11 +33,9 @@ public class LoggingAspect {
         log.info(formatter.logRequest(requestId,target,methodName,startTime,httpMethod,requestPath));
 
         try {
-            // execute the original method logic
             Object result = joinPoint.proceed();
 
             long endTime = System.currentTimeMillis();
-            // logging
             log.info(formatter.logResponse(requestId,target,methodName,startTime,endTime,httpMethod,requestPath));
 
             return result;
@@ -91,11 +87,9 @@ public class LoggingAspect {
         log.info(formatter.logRequest(requestId,target,methodName,startTime,httpMethod,requestPath));
 
         try {
-            // execute the original method logic
             Object result = joinPoint.proceed();
 
             long endTime = System.currentTimeMillis();
-            // logging
             log.info(formatter.logResponse(requestId,target,methodName,startTime,endTime,httpMethod,requestPath));
 
             return result;
@@ -107,4 +101,4 @@ public class LoggingAspect {
             throw e;
         }
     }
-}
+}

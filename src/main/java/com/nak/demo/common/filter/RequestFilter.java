@@ -34,7 +34,6 @@ public class RequestFilter implements Filter {
 
             MDC.put(RequestConstant.HTTP_METHOD,httpMethod);
             MDC.put(RequestConstant.REQUEST_PATH,fullRequestPath);
-            //execute our implementation
             filterChain.doFilter(servletRequest, servletResponse);
 
         } finally {

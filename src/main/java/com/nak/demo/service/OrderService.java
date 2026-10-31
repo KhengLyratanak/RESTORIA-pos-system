@@ -36,7 +36,7 @@ public class OrderService {
     private StockRepository stockRepository;
 
     @Autowired
-    private ProductRepository productRepository;   // NEW
+    private ProductRepository productRepository;
 
     @Autowired
     private StockManagementService stockManagementService;
@@ -76,11 +76,10 @@ public class OrderService {
     @Transactional
     public void createOrder(OrderCreateDto payload) {
 
-        // reserve stock for order
         stockManagementService.reserveStockforOrder(payload.getOrderItems());
         Order order = orderMapper.toEntity(payload);
 
-        recalculateTotals(order);   // NEW: calculate and set total + grandTotal
+        recalculateTotals(order);
 
         orderRepository.save(order);
     }
@@ -121,11 +120,10 @@ public class OrderService {
         order.setTotalPrice(total);
     }
 
-    // Works whether getPrice() returns BigDecimal, Double, or double
     private BigDecimal toBigDecimal(Number n) {
         if (n == null) {
             throw new IllegalStateException("Product price is missing");
         }
         return (n instanceof BigDecimal) ? (BigDecimal) n : BigDecimal.valueOf(n.doubleValue());
     }
-}
+}

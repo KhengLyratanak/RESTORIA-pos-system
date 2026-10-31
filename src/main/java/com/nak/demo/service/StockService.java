@@ -41,7 +41,6 @@ public class StockService {
 
     public void  createdStocks(StockDto stock) {
         Product existingProduct = productRepository.findById(stock.getProductId())
-                //product not found
                 .orElseThrow(() ->
                         new ResourceNotFoundException("product not found with id:" + stock.getProductId()));
 
@@ -52,18 +51,14 @@ public class StockService {
     public void adjustQuantity(Long stockId, UpdateStockDto updateStock) {
         Stock existingStock = stockRepository.findById(stockId)
 
-        // stock not found in DB
                 .orElseThrow(() ->
                         new ResourceNotFoundException("stock not found with id :"  +stockId));
 
-      //  Stock stock = existingStock.get();
-
-        if(updateStock.getOperationType() == 1) { // add
+        if(updateStock.getOperationType() == 1) {
             Long newQty = existingStock.getQuantity() + updateStock.getQuantity();
 
             existingStock.setQuantity(newQty);
-        } else if(updateStock.getOperationType() == 2) { // remove
-            //  when remove amount > existing amount
+        } else if(updateStock.getOperationType() == 2) {
             if(existingStock.getQuantity() < updateStock.getQuantity()) {
                 throw new UnprocessableEntityException("quantity to remove can not be exceeded than existing stock:" + existingStock.getQuantity());
             }
@@ -83,4 +78,4 @@ public class StockService {
             }
             stockRepository.deleteById(stockId);
         }
-}
+}

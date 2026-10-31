@@ -55,7 +55,6 @@ public class PagenatedResponse<T>{
     private static Link generateLinks(String baseUrl, int page, int size, int totalPages) {
         Link links = new Link();
 
-        //self link
         links.setSelf(buildUrl(baseUrl, page, size));
 
         links.setFirst(buildUrl(baseUrl, 0, size));

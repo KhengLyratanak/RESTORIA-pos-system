@@ -25,8 +25,6 @@ public class UserController {
     @Autowired
     private AuthService authService;
 
-    // ===== For the logged-in user (any role) =====
-
     @GetMapping("/me")
     public ResponseEntity<Response> me(@AuthenticationPrincipal User currentUser) {
         UserResponseDto dto = userService.getUser(currentUser.getId());
@@ -40,8 +38,6 @@ public class UserController {
         return ResponseEntity.ok(Response.success("200", "success",
                 "successfully changed password, please login again on your other devices"));
     }
-
-    // ===== Admin only =====
 
     @GetMapping()
     public ResponseEntity<Response> listUsers() {
@@ -87,4 +83,4 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(Response.success("200","success","successfully retrieved user",user));
     }
-}
+}

@@ -40,7 +40,6 @@ public class OrderItemMapper {
         Product product = productRepository.findById(entity.getProductId())
                 .orElse(null);
 
-        // Product was deleted, but keep the order
         if (product == null) {
             dto.setProductName("Product not found");
             dto.setUnitPrice(0.0);
@@ -60,4 +59,4 @@ public class OrderItemMapper {
                 .map(this::toResponseDto)
                 .toList();
     }
-}
+}

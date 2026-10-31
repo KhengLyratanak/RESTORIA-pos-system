@@ -57,11 +57,9 @@ public class RefreshTokenService {
     }
 
     public RefreshToken rotateRefreshToken(RefreshToken oldToken) {
-        // revoke old rf token
         oldToken.setRevoked(true);
         refreshTokenRepository.save(oldToken);
 
-        //generate new rf token
         return this.createRefreshToken(oldToken.getUser());
     }
     public void revoke(String token) {

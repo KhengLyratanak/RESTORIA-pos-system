@@ -22,8 +22,8 @@ class KhqrBuilderTest {
 
         String qr = r.qr();
         assertTrue(qr.startsWith("000201010212"));
-        assertTrue(qr.contains("5303116"));        // KHR
-        assertTrue(qr.contains("540510000"));      // amount
+        assertTrue(qr.contains("5303116"));
+        assertTrue(qr.contains("540510000"));
         String body = qr.substring(0, qr.length() - 4);
         assertTrue(body.endsWith("6304"));
         assertEquals(KhqrBuilder.crc16(body), qr.substring(qr.length() - 4));

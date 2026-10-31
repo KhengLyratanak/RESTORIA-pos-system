@@ -45,7 +45,6 @@ public class User implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         String normalised = this.role == null || this.role.isBlank() ? "USER" : this.role.trim().toUpperCase();
-        // Both spellings, so a SecurityConfig rule written as hasRole("ADMIN") or hasRole("admin") matches.
         return List.of(new SimpleGrantedAuthority("ROLE_" + normalised),
                 new SimpleGrantedAuthority("ROLE_" + normalised.toLowerCase()));
     }

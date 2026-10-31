@@ -22,29 +22,22 @@ public class StockManagementService {
     @Autowired
     private ProductRepository productRepository;
     public void reserveStockforOrder(List<OrderItemDto> orderItemDtos){
-        //map for product ids
         List<Long> productIds = orderItemDtos.stream()
                 .map(item -> item.getProductId())
                 .toList();
 
-        //get stocks in productids
         List<Stock> stocks = stockRepository.findByProductIdIn(productIds,
                 Sort.by(Sort.Direction.ASC,"createdAt"));
 
-        //map for required qty of productIds
         Map<Long,Long> requiredQuantities = orderItemDtos.stream()
                 .collect(Collectors.toMap(OrderItemDto::getProductId,OrderItemDto::getAmount));
-        //deduct stock for each product
         for (Long productId : requiredQuantities.keySet()){
-            //quantity to deduct
             long remain = requiredQuantities.get(productId);
 
-            //filter stock by productId
             List<Stock> stockByProduct = stocks.stream()
                     .filter(stock -> stock.getProduct().getId().equals(productId))
                     .toList();
 
-            //calculate and compare qty
             for (Stock stock : stockByProduct){
                 if (remain <= 0) break;
 

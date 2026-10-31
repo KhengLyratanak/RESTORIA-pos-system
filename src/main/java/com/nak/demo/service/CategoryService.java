@@ -46,7 +46,7 @@ public class CategoryService {
     public void deleteCategory(Long categoryId ){
         if (!categoryRepository.existsById(categoryId))
             throw new ResourceNotFoundException("category not found with id :"+categoryId);
-        productRepository.clearCategory(categoryId);   // menu items stay, just without a category
+        productRepository.clearCategory(categoryId);
         categoryRepository.deleteById(categoryId);
     }
 

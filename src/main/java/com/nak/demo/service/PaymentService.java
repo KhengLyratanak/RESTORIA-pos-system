@@ -28,7 +28,7 @@ import java.util.UUID;
 public class PaymentService {
 
     private static final Logger log = LoggerFactory.getLogger(PaymentService.class);
-    private static final Duration MIN_RECHECK = Duration.ofSeconds(2);          // do not hammer Bakong
+    private static final Duration MIN_RECHECK = Duration.ofSeconds(2);
     private static final Duration GIVE_UP_AFTER_EXPIRY = Duration.ofMinutes(5);
 
     @Autowired
@@ -53,7 +53,6 @@ public class PaymentService {
     public PaymentResponse createKhqr(Long orderId) {
         if (orderId == null) throw new InvalidPaymentException("orderId is required");
 
-        // The amount comes from the server's own order data, never from the browser.
         var order = orders.getPayableOrder(orderId);
         Instant now = clock.instant();
 
@@ -62,7 +61,7 @@ public class PaymentService {
         if (existing.isPresent()
                 && existing.get().getAmount().compareTo(order.amount()) == 0
                 && existing.get().getCurrency().equalsIgnoreCase(order.currency())) {
-            return toResponse(existing.get());   // dialog reopened: same QR, no duplicates
+            return toResponse(existing.get());
         }
 
         Instant expires = now.plusSeconds(props.qrTtlSeconds());
@@ -92,8 +91,6 @@ public class PaymentService {
         return repository.findIdsByStatus(PaymentStatus.PENDING);
     }
 
-    // ----- internals -----
-
     private Payment verify(UUID id) {
         Payment p = repository.findByIdForUpdate(id)
                 .orElseThrow(() -> new PaymentNotFoundException("Payment not found"));
@@ -115,12 +112,11 @@ public class PaymentService {
                 return p;
             }
             if (expired) {
-                p.setStatus(PaymentStatus.EXPIRED);   // checked one last time, still unpaid
+                p.setStatus(PaymentStatus.EXPIRED);
                 log.info("Payment {} EXPIRED: Bakong found no transaction for md5={}", id, p.getMd5());
             }
         } catch (BakongException e) {
             log.warn("Bakong check failed for payment {}: {}", id, e.getMessage());
-            // Could not verify: stay PENDING (never assume paid), but do not hang forever.
             if (now.isAfter(p.getExpiresAt().plus(GIVE_UP_AFTER_EXPIRY))) {
                 p.setStatus(PaymentStatus.EXPIRED);
                 log.info("Payment {} EXPIRED: gave up after Bakong errors", id);
@@ -158,4 +154,4 @@ public class PaymentService {
         return mapper.toResponse(p, remaining);
     }
 }
- 
+ 

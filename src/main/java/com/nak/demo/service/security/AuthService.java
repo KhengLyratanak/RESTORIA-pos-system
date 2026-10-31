@@ -83,7 +83,6 @@ public class AuthService {
         UserDetails userDetails = userService.loadUserByUsername(payload.getUsername());
         String accessToken = jwtUtil.generateToken(userDetails);
 
-        //generate refresh token
         User user = (User) userDetails;
         RefreshToken refreshToken =  refreshTokenService.createRefreshToken(user);
         return new AuthResponseDto(accessToken,refreshToken.getToken());
@@ -95,7 +94,6 @@ public class AuthService {
 
         User user = refreshToken.getUser();
         String newAccessToken = jwtUtil.generateToken(user);
-        // rotate: old refresh token is revoked, a new one is issued
         RefreshToken newRefreshToken = refreshTokenService.rotateRefreshToken(refreshToken);
         return new RefreshTokenResponeDto(newAccessToken, newRefreshToken.getToken(), "Bearer");
     }
@@ -104,7 +102,6 @@ public class AuthService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() ->
                         new ResourceNotFoundException("user not found with id :" + userId));
-        //if current password not the same with oldpassword
         if (!Objects.equals(user.getPassword(), dto.getOldPassword())) {
             throw new ResourceNotFoundException("old password is incorrect,please return the correct password");
         }
