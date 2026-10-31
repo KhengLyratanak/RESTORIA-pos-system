@@ -5,6 +5,7 @@ import com.nak.demo.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -19,6 +20,13 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+
+    /**
+     * Cashiers can sell: see the menu, place, pay, print and look up orders. Everything that changes the menu,
+     * prices, stock, users, or shows revenue is for admins only.
+     */
+    private static final String ADMIN = "ADMIN";
+
     @Autowired
     private UserService userService;
 
@@ -50,12 +58,19 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS ))
-                .authorizeHttpRequests(authz ->
-                        authz
-                               .requestMatchers("/api/v1/users/**").hasRole("admin")
-                                .requestMatchers("/api/v1/auth/**").permitAll()
-                                 .anyRequest()
-                                .authenticated()
+                .authorizeHttpRequests(authz -> authz
+                        .requestMatchers("/api/v1/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/users/me").authenticated()
+                        .requestMatchers(HttpMethod.PATCH, "/api/v1/users/me/password").authenticated()
+                        .requestMatchers("/api/v1/users/**").hasRole(ADMIN)
+                        .requestMatchers("/api/v1/reports/**").hasRole(ADMIN)
+                        .requestMatchers("/api/v1/stocks/**").hasRole(ADMIN)
+                        .requestMatchers("/api/v1/suppliers/**").hasRole(ADMIN)
+                        .requestMatchers(HttpMethod.GET, "/api/v1/products/**", "/api/v10/category/**").authenticated()
+                        .requestMatchers("/api/v1/products/**", "/api/v10/category/**").hasRole(ADMIN)
+                        .requestMatchers(HttpMethod.PATCH, "/api/v1/orders/*").hasRole(ADMIN)
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/orders/**").hasRole(ADMIN)
+                        .anyRequest().authenticated()
                 )
                 .authenticationManager(this.authenticationManager(http))
                 .exceptionHandling(exceptions -> exceptions
@@ -68,4 +83,4 @@ public class SecurityConfig {
 
         return http.build();
     }
-}
+}
