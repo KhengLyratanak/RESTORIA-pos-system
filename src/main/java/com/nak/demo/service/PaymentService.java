@@ -56,8 +56,8 @@ public class PaymentService {
         var order = orders.getPayableOrder(orderId);
         Instant now = clock.instant();
 
-        Optional<Payment> existing =
-                repository.findFirstByOrderIdAndStatusAndExpiresAtAfter(orderId, PaymentStatus.PENDING, now);
+        Optional<Payment> existing = repository.findFirstByOrderIdAndStatusAndExpiresAtAfter(orderId, PaymentStatus.PENDING, now);
+
         if (existing.isPresent()
                 && existing.get().getAmount().compareTo(order.amount()) == 0
                 && existing.get().getCurrency().equalsIgnoreCase(order.currency())) {
@@ -154,4 +154,4 @@ public class PaymentService {
         return mapper.toResponse(p, remaining);
     }
 }
- 
+ 

@@ -21,10 +21,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 public class SecurityConfig {
 
-    /**
-     * Cashiers can sell: see the menu, place, pay, print and look up orders. Everything that changes the menu,
-     * prices, stock, users, or shows revenue is for admins only.
-     */
     private static final String ADMIN = "ADMIN";
 
     @Autowired
@@ -83,4 +79,4 @@ public class SecurityConfig {
 
         return http.build();
     }
-}
+}
