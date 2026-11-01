@@ -34,3 +34,6 @@ build/
 
 ### Uploaded product photos (runtime data, not source) ###
 uploads/
+
+### Update folders from Claude (copy with apply.ps1, never push) ###
+/_*/
