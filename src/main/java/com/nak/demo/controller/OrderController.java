@@ -3,8 +3,11 @@ package com.nak.demo.controller;
 import com.nak.demo.dto.order.CancelOrderDto;
 import com.nak.demo.service.OrderService;
 import com.nak.demo.dto.base.Response;
+import com.nak.demo.dto.order.OrderAddItemsDto;
 import com.nak.demo.dto.order.OrderCreateDto;
+import com.nak.demo.dto.order.OrderDiscountDto;
 import com.nak.demo.dto.order.OrderResponseDto;
+import com.nak.demo.dto.order.OrderTableDto;
 import com.nak.demo.dto.order.OrderUpdateDto;
 import jakarta.persistence.Entity;
 import jakarta.validation.Valid;
@@ -28,6 +31,30 @@ public class OrderController {
 
          return ResponseEntity.status(HttpStatus.CREATED)
                  .body(Response.success("201","sucess","successfully created order"));
+    }
+
+    @PatchMapping("/{id}/discount")
+    public ResponseEntity<Response> applyDiscount(@PathVariable("id") Long orderId,
+                                                  @Valid @RequestBody OrderDiscountDto payload) {
+        OrderResponseDto order = orderService.applyDiscount(orderId, payload);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(Response.success("200", "success", "successfully updated discount", order));
+    }
+
+    @PostMapping("/{id}/items")
+    public ResponseEntity<Response> addItems(@PathVariable("id") Long orderId,
+                                             @Valid @RequestBody OrderAddItemsDto payload) {
+        OrderResponseDto order = orderService.addItems(orderId, payload);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(Response.success("200", "success", "successfully added items", order));
+    }
+
+    @PatchMapping("/{id}/table")
+    public ResponseEntity<Response> moveTable(@PathVariable("id") Long orderId,
+                                              @Valid @RequestBody OrderTableDto payload) {
+        OrderResponseDto order = orderService.moveTable(orderId, payload);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(Response.success("200", "success", "successfully moved order", order));
     }
 
     @PostMapping("/{id}/cancel")

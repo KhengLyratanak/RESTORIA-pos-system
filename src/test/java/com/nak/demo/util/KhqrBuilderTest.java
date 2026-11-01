@@ -17,7 +17,7 @@ class KhqrBuilderTest {
     @Test
     void qrIsWellFormed() {
         var r = KhqrBuilder.build(new KhqrBuilder.Params(
-                "shop@bank", "Test Shop", "Phnom Penh", false, null, null,
+                "shop@bank", null, "Test Shop", "Phnom Penh", false, null, null,
                 "KHR", new BigDecimal("10000"), "ORD-1", "POS-1", 1_700_000_000_000L, 1_700_000_180_000L));
 
         String qr = r.qr();
@@ -33,7 +33,7 @@ class KhqrBuilderTest {
     @Test
     void usdAmountHasTwoDecimals() {
         var r = KhqrBuilder.build(new KhqrBuilder.Params(
-                "shop@bank", "Test Shop", "Phnom Penh", false, null, null,
+                "shop@bank", null, "Test Shop", "Phnom Penh", false, null, null,
                 "USD", new BigDecimal("4.5"), "ORD-2", "POS-1", 1L, 2L));
         assertTrue(r.qr().contains("54044.50"));
         assertTrue(r.qr().contains("5303840"));

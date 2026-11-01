@@ -60,6 +60,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PATCH, "/api/v1/users/me/password").authenticated()
                         .requestMatchers("/api/v1/users/**").hasRole(ADMIN)
                         .requestMatchers("/api/v1/reports/**").hasRole(ADMIN)
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/settings").hasRole(ADMIN)
                         .requestMatchers("/api/v1/stocks/**").hasRole(ADMIN)
                         .requestMatchers("/api/v1/suppliers/**").hasRole(ADMIN)
                         .requestMatchers(HttpMethod.GET, "/api/v1/products/**", "/api/v10/category/**").authenticated()

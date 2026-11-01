@@ -41,13 +41,18 @@ public class OrderItemMapper {
                 .orElse(null);
 
         if (product == null) {
-            dto.setProductName("Product not found");
-            dto.setUnitPrice(0.0);
+            dto.setProductName("Deleted product");
+            dto.setUnitPrice(entity.getUnitPrice() != null ? entity.getUnitPrice().doubleValue() : 0.0);
             return dto;
         }
 
         dto.setProductName(product.getProductName());
-        dto.setUnitPrice(product.getPrice());
+        //the price saved at the moment of sale; old orders don't have one, so they show today's price
+        if (entity.getUnitPrice() != null) {
+            dto.setUnitPrice(entity.getUnitPrice().doubleValue());
+        } else {
+            dto.setUnitPrice(product.getPrice());
+        }
 
         return dto;
     }
@@ -59,4 +64,4 @@ public class OrderItemMapper {
                 .map(this::toResponseDto)
                 .toList();
     }
-}
+}

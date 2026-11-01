@@ -24,6 +24,39 @@ public class Order {
     private BigDecimal totalPrice = BigDecimal.ZERO;
     private BigDecimal grandTotal = BigDecimal.ZERO;
     private Double total = 0.0;
+
+    /** The table or take-away number this order belongs to. Null for orders without a table. */
+    @Column(name = "table_id")
+    private Long tableId;
+
+    /** Table name copied onto the order, e.g. "Table 3", so tickets and history keep it. */
+    @Column(name = "table_name", length = 30)
+    private String tableName;
+
+    /** Bill breakdown, saved when the order is made or a discount is given. Null on old orders. */
+    @Column(name = "subtotal", precision = 12, scale = 2)
+    private BigDecimal subtotal;
+
+    @Column(name = "discount_type", length = 10)
+    private String discountType;
+
+    @Column(name = "discount_value", precision = 12, scale = 2)
+    private BigDecimal discountValue;
+
+    @Column(name = "discount_amount", precision = 12, scale = 2)
+    private BigDecimal discountAmount;
+
+    @Column(name = "service_rate", precision = 5, scale = 2)
+    private BigDecimal serviceRate;
+
+    @Column(name = "service_charge", precision = 12, scale = 2)
+    private BigDecimal serviceCharge;
+
+    @Column(name = "vat_rate", precision = 5, scale = 2)
+    private BigDecimal vatRate;
+
+    @Column(name = "vat_amount", precision = 12, scale = 2)
+    private BigDecimal vatAmount;
     @OneToMany(mappedBy = "order",cascade = CascadeType.ALL)
     private List<OrderItem> items;
     @Column(name = "cancelled_at")

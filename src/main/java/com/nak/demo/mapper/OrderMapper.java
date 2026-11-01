@@ -48,6 +48,8 @@ public class OrderMapper {
         dto.setStatus(entity.getStatus());
         dto.setCancelledAt(entity.getCancelledAt());
         dto.setCancelReason(entity.getCancelReason());
+        dto.setTableId(entity.getTableId());
+        dto.setTableName(entity.getTableName());
         
         if (entity.getItems() != null && !entity.getItems().isEmpty()) {
             List<OrderItemResponseDto> orderItemDtos =
@@ -55,9 +57,15 @@ public class OrderMapper {
 
             dto.setItems(orderItemDtos);
 
-            Double total = calculateTotalPrice(orderItemDtos);
-            entity.setTotal(total);
-            dto.setTotal(total);
+            if (entity.getSubtotal() != null) {
+                //new orders: use the bill saved by OrderPricingService
+                setBill(dto, entity);
+            } else {
+                //old orders: no saved bill, work it out from the items like before
+                Double total = calculateTotalPrice(orderItemDtos);
+                entity.setTotal(total);
+                dto.setTotal(total);
+            }
         } else {
             dto.setItems(List.of());
             entity.setTotal(0.0);
@@ -81,6 +89,18 @@ public class OrderMapper {
         }
 
         entity.setStatus(dto.getStatus());
+    }
+
+    private void setBill(OrderResponseDto dto, Order entity) {
+        dto.setSubtotal(entity.getSubtotal());
+        dto.setDiscountType(entity.getDiscountType());
+        dto.setDiscountValue(entity.getDiscountValue());
+        dto.setDiscountAmount(entity.getDiscountAmount());
+        dto.setServiceRate(entity.getServiceRate());
+        dto.setServiceCharge(entity.getServiceCharge());
+        dto.setVatRate(entity.getVatRate());
+        dto.setVatAmount(entity.getVatAmount());
+        dto.setTotal(entity.getGrandTotal().doubleValue());
     }
 
     private Double calculateTotalPrice(
